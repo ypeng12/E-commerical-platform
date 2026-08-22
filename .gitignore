@@ -36,3 +36,7 @@ ENV/
 .idea/
 .pytest_cache/
 .agents/
+
+# Legacy / Subtask folders
+moden/
+modesens-sidetask-crawl_product*/

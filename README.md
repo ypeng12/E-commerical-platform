@@ -1,16 +1,16 @@
 <div align="center">
 
-# 🚀 Multi-Modal E-Commerce Product Image Similarity & Feature Alignment Engine
+# 🚀 E-Commerce Platform: Multi-Modal Vision & Data Aggregation Engine
 
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue?style=for-the-badge)](https://huggingface.co/spaces/Ypeng12/multi-modal-image-similarity)
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live%20Demo-blue?style=for-the-badge)](https://huggingface.co/spaces/Ypeng12/E-commerce-platform)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11+-4B8BBE?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-SIFT%20%26%20FLANN-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
 [![AWS Serverless](https://img.shields.io/badge/AWS-SAM%20%26%20Redshift-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://aws.amazon.com/)
 [![License MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-An industrial-grade, multi-modal computer vision and microservice pipeline designed for cross-merchant fashion product deduplication, structural similarity verification, and cloud data lake archiving.
+An enterprise-grade, multi-modal computer vision and microservice pipeline designed for cross-merchant fashion product deduplication, structural similarity verification, and cloud data lake archiving.
 
-[🌐 **Try Interactive Live Demo on Hugging Face Spaces**](https://huggingface.co/spaces/Ypeng12/multi-modal-image-similarity)
+[🌐 **Try Interactive Live Demo on Hugging Face Spaces**](https://huggingface.co/spaces/Ypeng12/E-commerce-platform)
 
 </div>
 
@@ -20,7 +20,7 @@ An industrial-grade, multi-modal computer vision and microservice pipeline desig
 
 In global multi-merchant e-commerce aggregators, identifying identical luxury goods across hundreds of distinct retailers (e.g., SSENSE, Farfetch, Saks Fifth Avenue) presents severe challenges due to variations in lighting, cropping, watermarks, background removal, and merchant-specific color grading.
 
-This platform implements a **5-Layer Pyramid Matching Architecture** combining perceptual hashing coarse filtering, SIFT keypoint vector alignment with FLANN KD-Tree indexing, CIELAB color space distance analysis, and SSIM structural error heatmaps to achieve **95.2%+ match precision** with an average execution latency under **180 ms**.
+**OmniVision Engine** implements a **5-Layer Pyramid Matching Architecture** combining perceptual hashing coarse filtering, SIFT keypoint vector alignment with FLANN KD-Tree indexing, CIELAB color space distance analysis, and SSIM structural error heatmaps to achieve **95.2%+ match precision** with an average execution latency under **180 ms**.
 
 ---
 
@@ -28,7 +28,7 @@ This platform implements a **5-Layer Pyramid Matching Architecture** combining p
 
 | Module | Core Technology | Industrial Capability & Metrics |
 | :--- | :--- | :--- |
-| **👁️ 1. Multi-Modal Vision Matcher** | `pHash`, `dHash`, `SIFT`, `FLANN`, `CIELAB`, `SSIM` | 5-Stage pyramid algorithm array; output SIFT alignment lines & SSIM Jet heatmap. |
+| **👁️ 1. Multi-Modal Vision Matcher** | `pHash`, `dHash`, `SIFT`, `FLANN`, `CIELAB`, `SSIM` | 5-Stage pyramid algorithm array; outputs SIFT alignment lines & SSIM Jet heatmap. |
 | **🛒 2. Distributed Merchant Parser** | `AWS SAM`, `SQS`, `Asyncio`, `Schema.org JSON-LD` | Scalable microservice parser supporting 362+ merchant platforms & Redis MD5 deduplication. |
 | **🗄️ 3. Redshift Spectrum ETL Lake** | `AWS Redshift`, `Spectrum`, `Parquet`, `S3 Partition` | Automated SQL UNLOAD pipeline by `year/month` partition, reclaiming 40%+ SSD storage. |
 | **📈 4. SEO Search API Pipeline** | `Google Search Console API`, `Baidu Push API` | OAuth 2.0 batch URL indexing pipeline & organic time-series performance aggregator. |
@@ -40,7 +40,7 @@ This platform implements a **5-Layer Pyramid Matching Architecture** combining p
 
 ```
 +-----------------------------------------------------------------------------------+
-|               Multi-Modal Product Similarity & Data Processing Pipeline            |
+|                     OmniVision Engine Data Processing Pipeline                    |
 +-----------------------------------------------------------------------------------+
 | [Multi-Merchant Crawling] ---> [SQS Task Queue] ---> [AWS Lambda Async Workers]  |
 |                                                              │                    |
@@ -67,8 +67,8 @@ This platform implements a **5-Layer Pyramid Matching Architecture** combining p
 
 ### 1. Clone Repository & Install Dependencies
 ```bash
-git clone https://github.com/ypeng12/multi-modal-image-similarity.git
-cd multi-modal-image-similarity
+git clone https://github.com/ypeng12/omni-vision-engine.git
+cd omni-vision-engine
 
 # Create virtual environment
 python3 -m venv .venv
@@ -98,7 +98,7 @@ This repository includes a GitHub Actions CI/CD pipeline in `.github/workflows/s
 3. Push to `main`:
    ```bash
    git add .
-   git commit -m "feat(ai): update multi-modal vision engine and gradio dashboard"
+   git commit -m "feat(ai): update project name to omni-vision-engine and refine README"
    git push origin main
    ```
 

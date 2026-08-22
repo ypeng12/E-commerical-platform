@@ -1,0 +1,20 @@
+version = 0.1
+
+[default]
+[default.global.parameters]
+stack_name = "modesens-crawlproduct"
+region_name = "us-east-1"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.validate.parameters]
+lint = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false
+resolve_s3 = true
+disable_rollback = false
+

@@ -18,4 +18,4 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git push https://ypeng12:$HF_TOKEN@huggingface.co/spaces/Ypeng12/multi-modal-image-similarity main --force
+          git push https://ypeng12:$HF_TOKEN@huggingface.co/spaces/Ypeng12/E-commerce-platform main --force

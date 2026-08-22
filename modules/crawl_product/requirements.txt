@@ -1,0 +1,11 @@
+aws_lambda_powertools
+aws-xray-sdk
+boto3
+sqlalchemy
+requests
+pymysql
+httpx
+h2
+redis
+lxml
+scrapy

@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'https://test2.modesens.com'"  # 生产环境建议替换为具体域名
+      AllowCredentials: "'true'"  # 如果需要凭证
+
+Resources:
+  Fn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.12
+      Handler: lambdas.app.lambda_handler
+      CodeUri: .
+      Timeout: 120
+      Environment:
+        Variables:
+          LOG_LEVEL: DEBUG
+          AUTH_TOKEN: gaSo8x29TcbAaB0H
+          REDIS_ENDPOINT: crawler-redis.vtklqm.ng.0001.use1.cache.amazonaws.com
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: ''
+          DATABASE_URL: mysql+pymysql://msproduction1:8aIBTE/EmWdSTTK0@lsdb.cnocxcr96apd.us-east-1.rds.amazonaws.com:3306/ladystyle?charset=utf8mb4
+          DATABASE_URL_LSMERGE: mysql+pymysql://lsmergeprod1:Zt%L7&d9`5&}Q+1@lsmerge.cnocxcr96apd.us-east-1.rds.amazonaws.com:3306/lsmerge?charset=utf8mb4
+      Events:
+        ApiCrawl:
+          Type: Api
+          Properties:
+            Path: /crawl_product
+            Method: post
+        ApiSave:
+          Type: Api
+          Properties:
+            Path: /save
+            Method: post
+        ApiHealth:
+          Type: Api
+          Properties:
+            Path: /health
+            Method: get
+        ApiQuery:
+          Type: Api
+          Properties:
+            Path: /query
+            Method: get
+        ApiAsyncCrawl:
+          Type: Api
+          Properties:
+            Path: /async_crawl
+            Method: post
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - lambda:InvokeFunction
+              Resource: '*'
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-aa50a4e1
+          - sg-979345f2
+          - sg-d640b49d
+        SubnetIds:
+          - subnet-04e704c376e9340cd
