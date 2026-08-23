@@ -59,14 +59,14 @@ def load_as_bgr(img_input):
 
 
 def create_fallback_image(title="LUXURY PRODUCT"):
-    img = np.full((500, 500, 3), (240, 240, 240), dtype=np.uint8)
+    img = np.full((500, 500, 3), (250, 250, 250), dtype=np.uint8)
     for x in range(0, 500, 25):
-        cv2.line(img, (x, 0), (x, 500), (220, 220, 220), 1)
-        cv2.line(img, (0, x), (500, x), (220, 220, 220), 1)
-    cv2.rectangle(img, (100, 180), (400, 420), (40, 40, 40), -1)
-    cv2.ellipse(img, (250, 180), (80, 70), 0, 180, 360, (60, 60, 60), 12)
-    cv2.circle(img, (250, 300), 30, (0, 215, 255), -1)
-    cv2.putText(img, title, (80, 470), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (30, 30, 30), 2)
+        cv2.line(img, (x, 0), (x, 500), (230, 230, 230), 1)
+        cv2.line(img, (0, x), (500, x), (230, 230, 230), 1)
+    cv2.rectangle(img, (100, 180), (400, 420), (30, 41, 59), -1)
+    cv2.ellipse(img, (250, 180), (80, 70), 0, 180, 360, (71, 85, 105), 12)
+    cv2.circle(img, (250, 300), 30, (245, 158, 11), -1)
+    cv2.putText(img, title, (70, 470), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (15, 23, 42), 2)
     return img
 
 
@@ -82,7 +82,7 @@ def resize_image(img, max_dimension=700):
 
 
 # =========================================================================
-# RADAR CHART GENERATOR
+# RADAR CHART GENERATOR (HIGH CONTRAST LIGHT THEME)
 # =========================================================================
 
 def generate_radar_chart(phash_score, dhash_score, sift_score, ssim_score, color_score):
@@ -92,21 +92,21 @@ def generate_radar_chart(phash_score, dhash_score, sift_score, ssim_score, color
     angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
     angles += angles[:1]
 
-    fig, ax = plt.subplots(figsize=(4.5, 4.5), subplot_kw=dict(polar=True), facecolor='#0F172A')
-    ax.set_facecolor('#1E293B')
+    fig, ax = plt.subplots(figsize=(4.5, 4.5), subplot_kw=dict(polar=True), facecolor='#FFFFFF')
+    ax.set_facecolor('#F8FAFC')
 
-    ax.plot(angles, values, color='#6366F1', linewidth=2.5, linestyle='solid')
-    ax.fill(angles, values, color='#6366F1', alpha=0.35)
+    ax.plot(angles, values, color='#4F46E5', linewidth=2.8, linestyle='solid')
+    ax.fill(angles, values, color='#6366F1', alpha=0.3)
 
     ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(categories, color='#94A3B8', fontsize=9, fontweight='bold')
+    ax.set_xticklabels(categories, color='#0F172A', fontsize=9.5, fontweight='bold')
     ax.set_rlabel_position(30)
-    plt.yticks([20, 40, 60, 80, 100], ["20", "40", "60", "80", "100"], color="#64748B", size=8)
+    plt.yticks([20, 40, 60, 80, 100], ["20", "40", "60", "80", "100"], color="#475569", size=8.5, fontweight='bold')
     plt.ylim(0, 100)
 
-    ax.spines['polar'].set_color('#334155')
-    ax.grid(color='#334155', linestyle='--', linewidth=0.7)
-    plt.title("5-Layer Pyramid Vector Profile", color="#F8FAFC", fontsize=11, fontweight="bold", pad=15)
+    ax.spines['polar'].set_color('#CBD5E1')
+    ax.grid(color='#CBD5E1', linestyle='--', linewidth=0.9)
+    plt.title("5-Layer Pyramid Vector Profile", color="#0F172A", fontsize=11.5, fontweight="bold", pad=15)
     plt.tight_layout()
     return fig
 
@@ -134,17 +134,6 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
             bgr2 = cv2.imread(SAMPLE_IMG2_PATH)
         else:
             bgr2 = create_fallback_image("Merchant Item")
-
-    if bgr1 is None or bgr2 is None:
-        fig_empty, _ = plt.subplots(figsize=(4, 4), facecolor='#0F172A')
-        return (
-            "<div style='padding:15px;background:#EF4444;color:#fff;border-radius:8px;'>⚠️ Missing Image Input</div>",
-            None,
-            None,
-            fig_empty,
-            json.dumps({"Error": "Missing input images"}, indent=2),
-            "### ❌ Execution Status: Waiting for images..."
-        )
 
     start_time = time.time()
 
@@ -226,22 +215,25 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
     # Radar plot
     radar_fig = generate_radar_chart(phash_score, dhash_score, sift_score, ssim_val, color_sim)
 
-    # Verdict Formatting
+    # Verdict Formatting (High Contrast Light Theme)
     if overall_score >= 80.0:
         verdict_badge = "🟢 IDENTICAL LUXURY PRODUCT MATCH (HIGH CONFIDENCE)"
-        verdict_color = "#10B981"
+        verdict_color = "#059669"
+        bg_gradient = "linear-gradient(135deg, #ECFDF5, #F0FDF4)"
     elif overall_score >= 55.0:
         verdict_badge = "🟡 SIMILAR ITEM / VARIANT (MODERATE CONFIDENCE)"
-        verdict_color = "#F59E0B"
+        verdict_color = "#D97706"
+        bg_gradient = "linear-gradient(135deg, #FFFBEB, #FEF3C7)"
     else:
         verdict_badge = "🔴 DIFFERENT PRODUCT / LOW MATCH"
-        verdict_color = "#EF4444"
+        verdict_color = "#DC2626"
+        bg_gradient = "linear-gradient(135deg, #FEF2F2, #FEE2E2)"
 
     verdict_markdown = f"""
-    <div style="padding: 24px; border-radius: 16px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9)); border: 1.5px solid {verdict_color}; text-align: center; margin-bottom: 15px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);">
+    <div style="padding: 24px; border-radius: 16px; background: {bg_gradient}; border: 2px solid {verdict_color}; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);">
         <h2 style="margin: 0; color: {verdict_color}; font-size: 22px; font-weight: 800; letter-spacing: 0.5px;">{verdict_badge}</h2>
-        <p style="font-size: 58px; font-weight: 900; margin: 10px 0; color: #818CF8; letter-spacing: -1.5px; text-shadow: 0 0 20px rgba(129, 140, 248, 0.4);">{overall_score:.1f}%</p>
-        <p style="margin: 0; color: #9CA3AF; font-size: 13px;">Multi-Modal Computer Vision Pyramid Index • Computed in <b style="color: #F3F4F6;">{elapsed_ms} ms</b></p>
+        <p style="font-size: 58px; font-weight: 900; margin: 10px 0; color: #4F46E5; letter-spacing: -1.5px;">{overall_score:.1f}%</p>
+        <p style="margin: 0; color: #475569; font-size: 14px; font-weight: 600;">Multi-Modal Computer Vision Pyramid Index • Computed in <b style="color: #0F172A;">{elapsed_ms} ms</b></p>
     </div>
     """
 
@@ -363,9 +355,9 @@ def demo_real_merchant_parser(merchant_select, raw_html_input):
 
 def run_end2end_pipeline(url_a, url_b):
     return (
-        f"""<div style="padding:16px;background:rgba(16,185,129,0.15);border:1px solid #10B981;border-radius:12px;">
-            <h3 style="margin:0;color:#34D399;">✅ End-to-End Pipeline Execution Completed</h3>
-            <p style="margin:5px 0 0 0;color:#D1D5DB;">Platform A (Farfetch: $2,980) vs Platform B (SSENSE: $2,850) • Identical Product Deduplicated (Match Index: <b>96.2%</b>)</p>
+        f"""<div style="padding:16px;background:#ECFDF5;border:1.5px solid #10B981;border-radius:12px;">
+            <h3 style="margin:0;color:#047857;font-weight:800;">✅ End-to-End Pipeline Execution Completed</h3>
+            <p style="margin:5px 0 0 0;color:#334155;">Platform A (Farfetch: $2,980) vs Platform B (SSENSE: $2,850) • Identical Product Deduplicated (Match Index: <b>96.2%</b>)</p>
         </div>""",
         json.dumps({
             "Platform A": "Farfetch",
@@ -378,28 +370,22 @@ def run_end2end_pipeline(url_a, url_b):
 
 
 # =========================================================================
-# GRADIO MODERN HIGH-TECH DASHBOARD UI
+# GRADIO HIGH-CONTRAST CLEAN LIGHT THEME CSS
 # =========================================================================
 
 CUSTOM_CSS = """
 .gradio-container {
-    background-color: #0B0F19 !important;
+    background-color: #F8FAFC !important;
     font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    color: #0F172A !important;
 }
 .hero-card {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.8));
-    border: 1px solid rgba(99, 102, 241, 0.25);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-}
-.stat-box {
-    background: rgba(30, 41, 59, 0.7);
-    border: 1px solid rgba(148, 163, 184, 0.15);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
 }
 """
 
@@ -412,27 +398,27 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS
         ### Enterprise Benchmark • Heterogeneous Product Image Alignment & 362+ Distributed Merchant Parsers
         
         <div style="display: flex; gap: 15px; margin: 15px 0 20px 0;">
-            <div style="flex: 1; padding: 16px; border-radius: 12px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(99, 102, 241, 0.4); text-align: center;">
-                <span style="color: #818CF8; font-size: 26px; font-weight: 800;">362+</span>
-                <p style="margin: 5px 0 0 0; color: #9CA3AF; font-size: 13px;">Merchant Platforms Integrated</p>
+            <div style="flex: 1; padding: 16px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #6366F1; text-align: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);">
+                <span style="color: #4F46E5; font-size: 26px; font-weight: 900;">362+</span>
+                <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px; font-weight: 600;">Merchant Platforms Integrated</p>
             </div>
-            <div style="flex: 1; padding: 16px; border-radius: 12px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(16, 185, 129, 0.4); text-align: center;">
-                <span style="color: #34D399; font-size: 26px; font-weight: 800;">&lt; 180 ms</span>
-                <p style="margin: 5px 0 0 0; color: #9CA3AF; font-size: 13px;">Average Execution Latency</p>
+            <div style="flex: 1; padding: 16px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #10B981; text-align: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);">
+                <span style="color: #059669; font-size: 26px; font-weight: 900;">&lt; 180 ms</span>
+                <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px; font-weight: 600;">Average Execution Latency</p>
             </div>
-            <div style="flex: 1; padding: 16px; border-radius: 12px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(245, 158, 11, 0.4); text-align: center;">
-                <span style="color: #FBBF24; font-size: 26px; font-weight: 800;">95.2%</span>
-                <p style="margin: 5px 0 0 0; color: #9CA3AF; font-size: 13px;">Multi-Modal Match Precision</p>
+            <div style="flex: 1; padding: 16px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #F59E0B; text-align: center; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);">
+                <span style="color: #D97706; font-size: 26px; font-weight: 900;">95.2%</span>
+                <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px; font-weight: 600;">Multi-Modal Match Precision</p>
             </div>
-            <div style="flex: 1; padding: 16px; border-radius: 12px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(236, 72, 153, 0.4); text-align: center;">
-                <span style="color: #F472B6; font-size: 26px; font-weight: 800;">5-Layer</span>
-                <p style="margin: 5px 0 0 0; color: #9CA3AF; font-size: 13px;">Pyramid Matching Array</p>
+            <div style="flex: 1; padding: 16px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #EC4899; text-align: center; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.08);">
+                <span style="color: #DB2777; font-size: 26px; font-weight: 900;">5-Layer</span>
+                <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px; font-weight: 600;">Pyramid Matching Array</p>
             </div>
         </div>
 
-        <div style="padding: 16px; border-radius: 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 20px;">
-            <h4 style="margin: 0 0 8px 0; color: #F1F5F9;">💡 Industrial Challenge & Solution:</h4>
-            <p style="margin: 0; color: #94A3B8; font-size: 14px; line-height: 1.6;">
+        <div style="padding: 16px; border-radius: 12px; background: #F1F5F9; border: 1px solid #CBD5E1; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 8px 0; color: #0F172A; font-weight: 800;">💡 Industrial Challenge & Solution:</h4>
+            <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">
                 Unlike single-domain vision models (such as face verification), luxury e-commerce product matching across 362+ global retailers 
                 (<b>Farfetch, SSENSE, Gucci, Saks, Net-A-Porter</b>) faces severe <b>cross-platform visual heterogeneity</b>: lighting variations, 
                 camera angles, studio background removal, watermarks, resolution cropping, and color grading. 
@@ -458,18 +444,23 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS
                 btn_preset_sneaker = gr.Button("👟 Case 3: Balenciaga Sneaker (SSIM Structural Heatmap)", variant="secondary")
                 btn_preset_diff = gr.Button("🎒 Case 4: Gucci Bag vs. Sneaker (Cross-Category)", variant="secondary")
 
+            def get_preset_images(path1, path2, title1="Luxury Item A", title2="Luxury Item B"):
+                i1 = cv2.cvtColor(cv2.imread(path1), cv2.COLOR_BGR2RGB) if os.path.exists(path1) else create_fallback_image(title1)
+                i2 = cv2.cvtColor(cv2.imread(path2), cv2.COLOR_BGR2RGB) if os.path.exists(path2) else create_fallback_image(title2)
+                return i1, i2
+
+            init_img1, init_img2 = get_preset_images(SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH, "Gucci Dionysus Bag", "Gucci Dionysus Bag")
+
             with gr.Row():
                 with gr.Column(scale=1):
                     img_a = gr.Image(
                         label="Image A (Platform Cover)",
-                        type="filepath",
-                        value=SAMPLE_GUCCI_PATH if os.path.exists(SAMPLE_GUCCI_PATH) else SAMPLE_IMG1_PATH
+                        value=init_img1
                     )
                 with gr.Column(scale=1):
                     img_b = gr.Image(
                         label="Image B (Merchant Image)",
-                        type="filepath",
-                        value=SAMPLE_GUCCI_PATH if os.path.exists(SAMPLE_GUCCI_PATH) else SAMPLE_IMG2_PATH
+                        value=init_img2
                     )
 
             with gr.Row():
@@ -502,11 +493,6 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS
 
             btn_run_cv.click(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
             demo.load(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
-
-            def get_preset_images(path1, path2, title1="Luxury Item A", title2="Luxury Item B"):
-                i1 = cv2.cvtColor(cv2.imread(path1), cv2.COLOR_BGR2RGB) if os.path.exists(path1) else create_fallback_image(title1)
-                i2 = cv2.cvtColor(cv2.imread(path2), cv2.COLOR_BGR2RGB) if os.path.exists(path2) else create_fallback_image(title2)
-                return i1, i2
 
             btn_preset_gucci.click(
                 lambda: get_preset_images(SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH, "Gucci Dionysus A", "Gucci Dionysus B"),
@@ -606,7 +592,7 @@ VACUUM {table_name};"""
 
                 return f"{unload_sql}\n\n{spectrum_ddl}\n\n{vacuum_sql}"
 
-            p3_btn.click(demo_redshift_etl, inputs=[p3_tbl, p3_s3, p3_start, p3_end], outputs=[p3_code], api_name=False)
+            p3_btn.click(demo_redshift_etl, inputs=[p3_tbl, p3_s3, p3_start, p3_end], outputs=[p3_code], api_api_name=False if hasattr(gr, 'api_name') else None)
 
 if __name__ == "__main__":
     demo.launch(server_name="0.0.0.0", server_port=7860)
