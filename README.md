@@ -73,6 +73,43 @@ Unlike single-domain vision problems (such as face verification), luxury e-comme
 
 ---
 
+## 🛠️ Complete Technical Stack & Engineering Specifications
+
+### 👁️ 1. Computer Vision & Feature Alignment Engine
+* **Perceptual Hashing (Coarse Filtering)**: 
+  * `pHash` (Discrete Cosine Transform DCT-based Perceptual Hash): Extracts global visual frequencies to eliminate non-matching candidates.
+  * `dHash` (Difference Gradient Hash): Fast gradient-based visual contour tracking.
+  * *Complexity*: $O(1)$ 64-bit Hamming distance comparison operating in $< 5\text{ ms}$.
+* **Invariant Local Feature Extraction**:
+  * `OpenCV SIFT`: Scale & rotation invariant 128-dimensional keypoint descriptors targeting hardware clips, logos, stitching, and zippers.
+  * `FLANN Matcher`: Fast Library for Approximate Nearest Neighbors with 5-tree randomized KD-Tree indexing.
+  * `Lowe's Ratio Test`: $0.75$ distance ratio filtering for geometric vector alignment visualization.
+* **Non-Linear Perceptual Color Analysis**:
+  * `CIELAB Color Space ($L^*a^*b^*$)`: Models non-linear human visual perception; calculates Euclidean color delta $\Delta E$ resistant to studio lighting shifts.
+  * `HSV Color Histograms`: Hue, Saturation, Value joint histogram correlation analysis.
+* **Structural Degradation & Error Mapping**:
+  * `SSIM (Structural Similarity Index)`: Evaluates luminance, contrast, and structural texture degradation.
+  * `OpenCV Colormap Jet Heatmap`: Maps SSIM residual matrices into an interactive jet colormap heatmap.
+
+### 🛒 2. Distributed Web Crawling & Merchant Parsing Engine
+* **Serverless Architecture**: `AWS SAM` + `AWS Lambda` async microservices.
+* **362+ Merchant Parsers**: Scalable parser array covering Farfetch, SSENSE, Gucci, Net-A-Porter, Saks, Modes, Bloomingdales, etc.
+* **Extraction Engine**: `Schema.org JSON-LD` structured parsing + `lxml / etree` XPath/CSS selector array.
+* **Size Normalization Engine**: `utils/size_convert.py` cross-country luxury size mapping (US, EU, UK, IT, JP).
+* **Anti-Scraping & Dynamic Rendering**: `Selenium` + `Headless Chrome` + `Pyppeteer` async renderer + `Redis MD5` deduplication cache.
+
+### 🗄️ 3. Cloud Data Lake & Storage Engine
+* **Data Warehouse**: `AWS Redshift` + `AWS Redshift Spectrum`.
+* **Automated S3 UNLOAD Pipeline**: Time-partitioned (`year/month`) Parquet data lake archiving reclaiming 40%+ SSD disk space.
+* **DDL Auto-Registration**: Dynamic Redshift Spectrum External Table registration.
+
+### 💻 4. Application Showcase & CI/CD
+* **Web UI**: `Gradio 4.44+` Dark Glassmorphic showcase dashboard.
+* **Automated CI/CD**: `GitHub Actions` workflow (`sync_to_hf.yml`) auto-syncing to Hugging Face Spaces.
+* **Core Libraries**: `Python 3.11` / `OpenCV` / `NumPy` / `Pillow` / `ImageHash` / `scikit-image` / `httpx` / `boto3`.
+
+---
+
 ## 📊 Performance Benchmarks & Metrics
 
 ```
