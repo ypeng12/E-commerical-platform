@@ -281,9 +281,9 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 
     return (
         verdict_markdown,
-        sift_pil,
-        heatmap_pil,
-        radar_pil,
+        np.array(sift_pil),
+        np.array(heatmap_pil),
+        np.array(radar_pil),
         json.dumps(metrics_dict, indent=2),
         report_markdown
     )
