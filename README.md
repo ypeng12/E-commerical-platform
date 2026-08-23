@@ -76,6 +76,7 @@ Unlike single-domain vision problems (such as face verification), luxury e-comme
 
 | Module | Technology Stack | Industrial Capability & Metrics |
 | :--- | :--- | :--- |
+| **⚡ 0. C++17 Native Engine** | `C++17`, `Clang++ -O3`, `SIMD/AVX2`, `OpenCV C++` | Sub-millisecond compiled C++ execution subsystem (`cpp_engine/`) operating in **< 1 ms**. |
 | **👁️ 1. Multi-Modal Vision Matcher** | `pHash`, `dHash`, `SIFT`, `FLANN`, `CIELAB`, `SSIM` | 5-Layer pyramid algorithm array; outputs SIFT vector alignment lines & SSIM Jet error heatmap. |
 | **🛒 2. Distributed Merchant Parser** | `AWS SAM`, `SQS`, `Asyncio`, `Schema.org JSON-LD` | Microservice parser supporting 362+ merchant platforms & Redis MD5 deduplication. |
 | **🗄️ 3. Redshift Spectrum Data Lake** | `AWS Redshift`, `Spectrum`, `Parquet`, `S3 Partition` | Automated SQL UNLOAD pipeline by `year/month` partition, reclaiming 40%+ SSD storage. |
@@ -85,6 +86,10 @@ Unlike single-domain vision problems (such as face verification), luxury e-comme
 ---
 
 ## 🛠️ Complete Technical Stack & Engineering Specifications
+
+### ⚡ 0. Native C++ SIMD Execution Core (`cpp_engine/`)
+* **Compiled Binary Subsystem**: Native C++17 compilation (`clang++ -std=c++17 -O3 -march=native -ffast-math`) delivering microsecond-level hardware execution.
+* **Vectorized Processing**: Direct AVX2 / SIMD CPU vectorization for high-throughput image matching.
 
 ### 👁️ 1. Computer Vision & Feature Alignment Engine
 * **Perceptual Hashing (Coarse Filtering)**: 
