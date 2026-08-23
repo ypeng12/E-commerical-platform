@@ -3,5 +3,3 @@ numpy
 pillow
 imagehash
 scikit-image
-huggingface-hub==0.24.6
-jinja2==3.0.3
