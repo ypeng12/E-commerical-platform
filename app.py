@@ -389,6 +389,8 @@ def run_product_name_search_matching(product_name, sift_ratio, draw_count, backe
     """
     return img_a, img_b, search_status_html, verdict, sift_img, ssim_img, radar_img, json_metrics, report_md
 
+from urllib.parse import quote_plus
+
 def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global Luxury Retailers"):
     bgr = load_as_bgr(uploaded_image)
     if bgr is None:
@@ -406,7 +408,7 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
     merchant_catalog_results = [
         {
             "merchant": "SSENSE",
-            "country": "US / Canada",
+            "country": "US / Canada / Global",
             "sku": "252379M711000",
             "brand": "GUCCI",
             "title": "Dionysus GG Small Shoulder Bag in Beige/Ebony",
@@ -419,7 +421,8 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
             "parser_module": "modules.crawl_product.merchants.ssense",
             "confidence": 98.4,
             "badge_color": "#10B981",
-            "store_url": "https://www.ssense.com/en-us/women/designers/gucci"
+            "search_url": "https://www.google.com/search?tbm=shop&q=Gucci+Dionysus+Bag+SSENSE",
+            "store_url": "https://www.ssense.com"
         },
         {
             "merchant": "Farfetch",
@@ -436,7 +439,8 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
             "parser_module": "modules.crawl_product.merchants.farfetch",
             "confidence": 96.2,
             "badge_color": "#6366F1",
-            "store_url": "https://www.farfetch.com/shopping/women/gucci/items.aspx"
+            "search_url": "https://www.google.com/search?tbm=shop&q=Gucci+Dionysus+Bag+Farfetch",
+            "store_url": "https://www.farfetch.com"
         },
         {
             "merchant": "Saks Fifth Avenue",
@@ -453,7 +457,8 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
             "parser_module": "modules.crawl_product.merchants.saks",
             "confidence": 94.8,
             "badge_color": "#6366F1",
-            "store_url": "https://www.saksfifthavenue.com/b/gucci"
+            "search_url": "https://www.google.com/search?tbm=shop&q=Gucci+Dionysus+Bag+Saks",
+            "store_url": "https://www.saksfifthavenue.com"
         },
         {
             "merchant": "Net-A-Porter",
@@ -470,7 +475,8 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
             "parser_module": "modules.crawl_product.merchants.netaporter",
             "confidence": 93.5,
             "badge_color": "#F59E0B",
-            "store_url": "https://www.net-a-porter.com/en-us/shop/designer/gucci"
+            "search_url": "https://www.google.com/search?tbm=shop&q=Gucci+Dionysus+Bag+Net-A-Porter",
+            "store_url": "https://www.net-a-porter.com"
         }
     ]
 
@@ -485,7 +491,7 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
     </div>
     """
 
-    price_cards_html = """<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px;">"""
+    price_cards_html = """<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; margin-bottom: 20px;">"""
     for res in merchant_catalog_results:
         price_cards_html += f"""
         <div style="padding: 18px; border-radius: 14px; background: #FFFFFF; border: 1.5px solid {res['badge_color']}; box-shadow: 0 4px 14px rgba(0,0,0,0.05); position: relative;">
@@ -500,7 +506,10 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
                 <b>Parser Engine:</b> <code>{res['parser_module']}</code><br/>
                 <b>Size Map:</b> IT 38 ➔ US 6 / EU 36
             </div>
-            <a href="{res['store_url']}" target="_blank" style="display: block; text-align: center; padding: 8px 0; background: #4F46E5; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 13px;">🛒 Visit Merchant Store Page</a>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <a href="{res['search_url']}" target="_blank" style="display: block; text-align: center; padding: 9px 0; background: #4F46E5; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 13px; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.2);">🔍 实时查看该商家在售商品 (Google Shopping)</a>
+                <a href="{res['store_url']}" target="_blank" style="display: block; text-align: center; padding: 8px 0; background: #F1F5F9; color: #334155; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 12px; border: 1px solid #CBD5E1;">🏬 直达 {res['merchant']} 官网</a>
+            </div>
         </div>
         """
     price_cards_html += "</div>"
