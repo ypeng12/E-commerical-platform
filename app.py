@@ -283,10 +283,10 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase") as demo:
     # HERO STATS BANNER
     gr.Markdown(
         """
-        # 🚀 Multi-Modal Computer Vision & Distributed Data Engine
-        ### Enterprise AI Showcase Dashboard • Computer Vision, Distributed Parsers & Cloud Data Lake
+        # 🚀 E-Commerce Platform: Multi-Modal Vision & Data Aggregation Engine
+        ### Enterprise AI Benchmark • Cross-Merchant Heterogeneous Image Alignment & Distributed Microservices
         
-        <div style="display: flex; gap: 15px; margin: 15px 0 25px 0;">
+        <div style="display: flex; gap: 15px; margin: 15px 0 20px 0;">
             <div style="flex: 1; padding: 15px; border-radius: 12px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(99, 102, 241, 0.3); text-align: center;">
                 <span style="color: #818CF8; font-size: 24px; font-weight: 800;">362+</span>
                 <p style="margin: 5px 0 0 0; color: #9CA3AF; font-size: 13px;">Retail Merchants Integrated</p>
@@ -304,6 +304,16 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase") as demo:
                 <p style="margin: 5px 0 0 0; color: #9CA3AF; font-size: 13px;">Pyramid Algorithm Array</p>
             </div>
         </div>
+
+        <div style="padding: 16px; border-radius: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(99, 102, 241, 0.2); margin-bottom: 20px;">
+            <h4 style="margin: 0 0 8px 0; color: #E2E8F0;">💡 Industrial Challenge & Core Innovation:</h4>
+            <p style="margin: 0; color: #94A3B8; font-size: 14px; line-height: 1.6;">
+                Unlike single-domain vision models (such as face verification), luxury e-commerce product matching across 362+ global retailers 
+                (<b>Farfetch, SSENSE, Gucci, Saks, Net-A-Porter</b>) faces severe <b>cross-platform visual heterogeneity</b>: lighting variations, 
+                camera angles, studio background removal, watermarks, resolution cropping, and color grading. 
+                Our <b>5-Layer Pyramid Matching Array</b> synthesizes <i>pHash/dHash, SIFT + FLANN KD-Tree vector alignment, CIELAB non-linear color ΔE, and SSIM structural error heatmaps</i> to deliver deterministic deduplication.
+            </p>
+        </div>
         ---
         """
     )
@@ -314,7 +324,7 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase") as demo:
         # TAB 1: CV VISION MATCHER (THE MAIN WOW FEATURE)
         # -----------------------------------------------------------------
         with gr.Tab("👁️ Multi-Modal Image Matcher & Feature Alignment"):
-            gr.Markdown("### 📸 Dual-Image Matcher & Computer Vision Explainability Studio")
+            gr.Markdown("### 📸 Cross-Merchant Dual-Image Invariant Matcher & XAI Studio")
             
             with gr.Row():
                 with gr.Column(scale=1):
