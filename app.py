@@ -318,7 +318,7 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 # =========================================================================
 
 INIT_IMG1 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_fallback_image("Gucci Dionysus A")
-INIT_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_fallback_image("Gucci Dionysus B")
+INIT_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_ANGLE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_ANGLE_PATH) else INIT_IMG1.copy()
 PRESET_1_CACHE = run_multimodal_vision_matching(INIT_IMG1, INIT_IMG2)
 
 SHOES_IMG1 = cv2.cvtColor(cv2.imread(SAMPLE_IMG1_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG1_PATH) else create_fallback_image("Marni Loafers A")
@@ -355,12 +355,12 @@ def fetch_merchant_images_by_name(query_name):
     if "loewe" in q or "puzzle" in q:
         title = "Loewe Small Puzzle Bag in Classic Calfskin"
         img_a = cv2.cvtColor(cv2.imread(SAMPLE_LOEWE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_LOEWE_PATH) else create_styled_product_image("Loewe Puzzle Bag", "Platform A: Net-A-Porter")
-        img_b = img_a.copy()
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_LOEWE_ANGLE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_LOEWE_ANGLE_PATH) else img_a.copy()
         merchants_info = "Platform A (Net-A-Porter: $3,250) vs Platform B (Mytheresa: $3,100 • 🔥 $150 Savings)"
     elif "prada" in q or "galleria" in q:
         title = "Prada Saffiano Leather Galleria Medium Bag"
         img_a = cv2.cvtColor(cv2.imread(SAMPLE_PRADA_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_PRADA_PATH) else create_styled_product_image("Prada Galleria Bag", "Platform A: Saks Fifth Avenue")
-        img_b = img_a.copy()
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_PRADA_ANGLE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_PRADA_ANGLE_PATH) else img_a.copy()
         merchants_info = "Platform A (Saks: $3,950 • 🔥 $150 Savings) vs Platform B (Farfetch: $4,100)"
     elif "sneaker" in q or "triple s" in q or "balenciaga" in q:
         title = "Balenciaga Triple S Sneaker in Leather & Mesh"
@@ -375,12 +375,12 @@ def fetch_merchant_images_by_name(query_name):
     elif "saint laurent" in q or "ysl" in q or "loulou" in q:
         title = "Saint Laurent Loulou Small Chain Shoulder Bag"
         img_a = cv2.cvtColor(cv2.imread(SAMPLE_YSL_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_YSL_PATH) else create_styled_product_image("YSL Loulou Bag", "Platform A: Saks Fifth Avenue")
-        img_b = img_a.copy()
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_YSL_ANGLE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_YSL_ANGLE_PATH) else img_a.copy()
         merchants_info = "Platform A (Saks: $2,950) vs Platform B (Net-A-Porter: $2,950 • Identical Price)"
     else:
         title = f"{query_name.title() if query_name else 'Gucci Dionysus GG Small Shoulder Bag'}"
         img_a = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_styled_product_image(title, "Platform A: Farfetch")
-        img_b = img_a.copy()
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_ANGLE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_ANGLE_PATH) else img_a.copy()
         merchants_info = "Platform A (Farfetch: $2,980) vs Platform B (SSENSE: $2,850 • 🔥 $130 Savings)"
 
     return img_a, img_b, title, merchants_info
