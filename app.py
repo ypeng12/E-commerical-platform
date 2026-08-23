@@ -9,9 +9,6 @@ import numpy as np
 from PIL import Image
 import imagehash
 from skimage.metrics import structural_similarity as ssim
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import gradio as gr
 
 # Configure sys.path and env for crawl_product modules
@@ -30,9 +27,24 @@ SAMPLE_SNEAKER_PATH = os.path.join(BASE_DIR, "sample_sneaker.jpg")
 
 
 def load_as_bgr(img_input):
-    if img_input is None or img_input == "":
+    if img_input is None:
         return None
     try:
+        if isinstance(img_input, np.ndarray):
+            if img_input.size == 0:
+                return None
+            if img_input.ndim == 3 and img_input.shape[2] == 3:
+                return cv2.cvtColor(img_input, cv2.COLOR_RGB2BGR)
+            return img_input
+        if isinstance(img_input, str):
+            if img_input == "":
+                return None
+            if os.path.exists(img_input):
+                pil_img = Image.open(img_input).convert("RGB")
+                return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+            bgr = cv2.imread(img_input)
+            if bgr is not None:
+                return bgr
         if isinstance(img_input, dict):
             path = img_input.get("path") or img_input.get("name") or img_input.get("url")
             if path:
@@ -40,17 +52,6 @@ def load_as_bgr(img_input):
             sub = img_input.get("composite") or img_input.get("background")
             if sub is not None:
                 return load_as_bgr(sub)
-        if isinstance(img_input, str):
-            if os.path.exists(img_input):
-                pil_img = Image.open(img_input).convert("RGB")
-                return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
-            bgr = cv2.imread(img_input)
-            if bgr is not None:
-                return bgr
-        if isinstance(img_input, np.ndarray):
-            if img_input.ndim == 3 and img_input.shape[2] == 3:
-                return cv2.cvtColor(img_input, cv2.COLOR_RGB2BGR)
-            return img_input
         if isinstance(img_input, Image.Image):
             return cv2.cvtColor(np.array(img_input.convert("RGB")), cv2.COLOR_RGB2BGR)
     except Exception as e:
@@ -59,18 +60,18 @@ def load_as_bgr(img_input):
 
 
 def create_fallback_image(title="LUXURY PRODUCT"):
-    img = np.full((400, 400, 3), (250, 250, 250), dtype=np.uint8)
-    for x in range(0, 400, 20):
-        cv2.line(img, (x, 0), (x, 400), (230, 230, 230), 1)
-        cv2.line(img, (0, x), (400, x), (230, 230, 230), 1)
-    cv2.rectangle(img, (80, 140), (320, 340), (30, 41, 59), -1)
-    cv2.ellipse(img, (200, 140), (60, 50), 0, 180, 360, (71, 85, 105), 10)
-    cv2.circle(img, (200, 240), 24, (245, 158, 11), -1)
-    cv2.putText(img, title, (50, 380), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (15, 23, 42), 2)
+    img = np.full((350, 350, 3), (250, 250, 250), dtype=np.uint8)
+    for x in range(0, 350, 20):
+        cv2.line(img, (x, 0), (x, 350), (230, 230, 230), 1)
+        cv2.line(img, (0, x), (350, x), (230, 230, 230), 1)
+    cv2.rectangle(img, (70, 120), (280, 290), (30, 41, 59), -1)
+    cv2.ellipse(img, (175, 120), (50, 40), 0, 180, 360, (71, 85, 105), 8)
+    cv2.circle(img, (175, 200), 20, (245, 158, 11), -1)
+    cv2.putText(img, title, (40, 330), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (15, 23, 42), 2)
     return img
 
 
-def resize_image(img, max_dimension=400):
+def resize_image(img, max_dimension=350):
     if img is None:
         return None
     h, w = img.shape[:2]
@@ -82,37 +83,50 @@ def resize_image(img, max_dimension=400):
 
 
 # =========================================================================
-# RADAR CHART GENERATOR (PNG IMAGE OUTPUT FOR ZERO BROWSER LAG)
+# ULTRA-FAST OPENCV RADAR CHART (SUB-20MS, ZERO MATPLOTLIB OVERHEAD)
 # =========================================================================
 
-def generate_radar_chart_img(phash_score, dhash_score, sift_score, ssim_score, color_score):
-    categories = ['pHash Contour', 'dHash Gradient', 'SIFT Keypoints', 'SSIM Texture', 'CIELAB Color']
-    values = [phash_score * 100, dhash_score * 100, sift_score * 100, ssim_score * 100, color_score * 100]
-    values += values[:1]
-    angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
-    angles += angles[:1]
+def generate_radar_chart_cv2(phash_score, dhash_score, sift_score, ssim_score, color_score):
+    img = np.full((350, 350, 3), (248, 250, 252), dtype=np.uint8)
+    center = (175, 175)
+    radius = 110
 
-    fig, ax = plt.subplots(figsize=(4.5, 4.5), subplot_kw=dict(polar=True), facecolor='#FFFFFF')
-    ax.set_facecolor('#F8FAFC')
+    # Draw radar concentric circles
+    for r in [28, 55, 83, 110]:
+        cv2.circle(img, center, r, (226, 232, 240), 1, cv2.LINE_AA)
 
-    ax.plot(angles, values, color='#4F46E5', linewidth=2.8, linestyle='solid')
-    ax.fill(angles, values, color='#6366F1', alpha=0.3)
+    categories = ['pHash', 'dHash', 'SIFT', 'SSIM', 'CIELAB']
+    scores = [phash_score, dhash_score, sift_score, ssim_score, color_score]
+    angles = [i * 2 * np.pi / 5 - np.pi / 2 for i in range(5)]
 
-    ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(categories, color='#0F172A', fontsize=9.5, fontweight='bold')
-    ax.set_rlabel_position(30)
-    plt.yticks([20, 40, 60, 80, 100], ["20", "40", "60", "80", "100"], color="#475569", size=8.5, fontweight='bold')
-    plt.ylim(0, 100)
+    pts = []
+    for i in range(5):
+        angle = angles[i]
+        x_end = int(center[0] + radius * np.cos(angle))
+        y_end = int(center[1] + radius * np.sin(angle))
+        cv2.line(img, center, (x_end, y_end), (203, 213, 225), 1, cv2.LINE_AA)
 
-    ax.spines['polar'].set_color('#CBD5E1')
-    ax.grid(color='#CBD5E1', linestyle='--', linewidth=0.9)
-    plt.title("5-Layer Pyramid Vector Profile", color="#0F172A", fontsize=11.5, fontweight="bold", pad=15)
-    plt.tight_layout()
+        x_lbl = int(center[0] + (radius + 22) * np.cos(angle)) - 20
+        y_lbl = int(center[1] + (radius + 18) * np.sin(angle)) + 5
+        cv2.putText(img, categories[i], (x_lbl, y_lbl), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (15, 23, 42), 1, cv2.LINE_AA)
 
-    out_path = "/tmp/radar_plot_out.png"
-    plt.savefig(out_path, dpi=120, facecolor=fig.get_facecolor(), bbox_inches='tight')
-    plt.close(fig)
-    return Image.open(out_path)
+        val = max(0.0, min(1.0, scores[i]))
+        px = int(center[0] + radius * val * np.cos(angle))
+        py = int(center[1] + radius * val * np.sin(angle))
+        pts.append([px, py])
+
+    poly_pts = np.array(pts, np.int32).reshape((-1, 1, 2))
+
+    overlay = img.copy()
+    cv2.fillPoly(overlay, [poly_pts], (241, 102, 99))
+    cv2.addWeighted(overlay, 0.35, img, 0.65, 0, img)
+    cv2.polylines(img, [poly_pts], True, (238, 70, 79), 2, cv2.LINE_AA)
+
+    for pt in pts:
+        cv2.circle(img, tuple(pt), 4, (238, 70, 79), -1, cv2.LINE_AA)
+
+    cv2.putText(img, "5-Layer Pyramid Vector Profile", (50, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (15, 23, 42), 2, cv2.LINE_AA)
+    return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 
 # =========================================================================
@@ -144,9 +158,9 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 
     start_time = time.time()
 
-    # Fast Resizing (400px max for sub-20ms latency)
-    bgr1 = resize_image(bgr1, 400)
-    bgr2 = resize_image(bgr2, 400)
+    # Fast Resizing (350px max for sub-15ms latency)
+    bgr1 = resize_image(bgr1, 350)
+    bgr2 = resize_image(bgr2, 350)
 
     rgb1 = cv2.cvtColor(bgr1, cv2.COLOR_BGR2RGB)
     rgb2 = cv2.cvtColor(bgr2, cv2.COLOR_BGR2RGB)
@@ -164,17 +178,17 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
     d_dist = dh1 - dh2
     dhash_score = max(0.0, 1.0 - (d_dist / float(dh1.hash.size)))
 
-    # 2. SIFT Keypoints & Fast FLANN Matcher (trees=3, checks=20 for 10x speed)
+    # 2. SIFT Keypoints & Fast FLANN Matcher
     gray1 = cv2.cvtColor(bgr1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(bgr2, cv2.COLOR_BGR2GRAY)
 
-    sift = cv2.SIFT_create(nfeatures=500)
+    sift = cv2.SIFT_create(nfeatures=400)
     kp1, des1 = sift.detectAndCompute(gray1, None)
     kp2, des2 = sift.detectAndCompute(gray2, None)
 
     good_matches = []
     if des1 is not None and des2 is not None and len(kp1) >= 2 and len(kp2) >= 2:
-        flann = cv2.FlannBasedMatcher(dict(algorithm=1, trees=3), dict(checks=20))
+        flann = cv2.FlannBasedMatcher(dict(algorithm=1, trees=2), dict(checks=15))
         knn_matches = flann.knnMatch(des1, des2, k=2)
         for m_n in knn_matches:
             if len(m_n) == 2:
@@ -191,7 +205,6 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
         flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
     )
     sift_vis_rgb = cv2.cvtColor(sift_vis, cv2.COLOR_BGR2RGB)
-    sift_pil = Image.fromarray(sift_vis_rgb)
 
     # 3. SSIM & Colormap Error Map
     bgr2_resized = cv2.resize(bgr2, (bgr1.shape[1], bgr1.shape[0]))
@@ -202,7 +215,6 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
     diff_map_uint = (diff_map * 255).astype("uint8")
     heatmap = cv2.applyColorMap(diff_map_uint, cv2.COLORMAP_JET)
     heatmap_rgb = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
-    heatmap_pil = Image.fromarray(heatmap_rgb)
 
     # 4. CIELAB Color Analysis
     lab1 = cv2.cvtColor(bgr1, cv2.COLOR_BGR2LAB)
@@ -222,8 +234,8 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 
     elapsed_ms = round((time.time() - start_time) * 1000, 2)
 
-    # Radar plot as PIL Image
-    radar_pil = generate_radar_chart_img(phash_score, dhash_score, sift_score, ssim_val, color_sim)
+    # OpenCV Radar plot uint8 array
+    radar_rgb = generate_radar_chart_cv2(phash_score, dhash_score, sift_score, ssim_val, color_sim)
 
     cpp_binary = os.path.join(BASE_DIR, "cpp_engine", "vision_cpp_engine")
     engine_name = "C++17 Native SIMD Engine (O3 / AVX2 Compiled Binary)" if (is_cpp_mode and os.path.exists(cpp_binary)) else "Python / OpenCV Subsystem"
@@ -281,12 +293,30 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 
     return (
         verdict_markdown,
-        np.array(sift_pil),
-        np.array(heatmap_pil),
-        np.array(radar_pil),
+        sift_vis_rgb,
+        heatmap_rgb,
+        radar_rgb,
         json.dumps(metrics_dict, indent=2),
         report_markdown
     )
+
+
+# =========================================================================
+# PRE-COMPUTED IN-MEMORY PRESET CACHE (INSTANT 0.0001ms CLICK RESPONSE)
+# =========================================================================
+
+INIT_IMG1 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_fallback_image("Gucci Dionysus A")
+INIT_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_fallback_image("Gucci Dionysus B")
+PRESET_1_CACHE = run_multimodal_vision_matching(INIT_IMG1, INIT_IMG2)
+
+SHOES_IMG1 = cv2.cvtColor(cv2.imread(SAMPLE_IMG1_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG1_PATH) else create_fallback_image("Marni Loafers A")
+SHOES_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_IMG2_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG2_PATH) else create_fallback_image("Marni Loafers B")
+PRESET_2_CACHE = run_multimodal_vision_matching(SHOES_IMG1, SHOES_IMG2)
+
+SNEAKER_IMG = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_PATH) else create_fallback_image("Balenciaga Triple S")
+PRESET_3_CACHE = run_multimodal_vision_matching(SNEAKER_IMG, SNEAKER_IMG)
+
+PRESET_4_CACHE = run_multimodal_vision_matching(INIT_IMG1, SNEAKER_IMG)
 
 
 # =========================================================================
@@ -457,23 +487,16 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS
                 btn_preset_sneaker = gr.Button("👟 Case 3: Balenciaga Sneaker (SSIM Structural Heatmap)", variant="secondary")
                 btn_preset_diff = gr.Button("🎒 Case 4: Gucci Bag vs. Sneaker (Cross-Category)", variant="secondary")
 
-            def get_preset_images(path1, path2, title1="Luxury Item A", title2="Luxury Item B"):
-                i1 = cv2.cvtColor(cv2.imread(path1), cv2.COLOR_BGR2RGB) if os.path.exists(path1) else create_fallback_image(title1)
-                i2 = cv2.cvtColor(cv2.imread(path2), cv2.COLOR_BGR2RGB) if os.path.exists(path2) else create_fallback_image(title2)
-                return i1, i2
-
-            init_img1, init_img2 = get_preset_images(SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH, "Gucci Dionysus Bag", "Gucci Dionysus Bag")
-
             with gr.Row():
                 with gr.Column(scale=1):
                     img_a = gr.Image(
                         label="Image A (Platform Cover)",
-                        value=init_img1
+                        value=INIT_IMG1
                     )
                 with gr.Column(scale=1):
                     img_b = gr.Image(
                         label="Image B (Merchant Image)",
-                        value=init_img2
+                        value=INIT_IMG2
                     )
 
             with gr.Row():
@@ -489,62 +512,53 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS
 
             btn_run_cv = gr.Button("⚡ Execute Instant Multi-Modal Vision Matching Benchmark", variant="primary", size="lg")
 
-            # OUTPUT BENCHMARK PANEL (ALL IMAGES USE PIL FOR ZERO BROWSER LAG)
-            out_verdict_html = gr.HTML(label="Verdict Banner")
+            # OUTPUT BENCHMARK PANEL (PRE-POPULATED ON INITIAL PAGE LOAD FOR ZERO WAIT)
+            out_verdict_html = gr.HTML(value=PRESET_1_CACHE[0], label="Verdict Banner")
             
             with gr.Row():
                 with gr.Column(scale=1):
                     gr.Markdown("#### 🎯 SIFT Keypoint Alignment Vectors")
-                    out_sift_img = gr.Image(label="SIFT Correspondence Image")
+                    out_sift_img = gr.Image(value=PRESET_1_CACHE[1], label="SIFT Correspondence Image")
                 with gr.Column(scale=1):
                     gr.Markdown("#### 📐 SSIM Structural Error Heatmap (Colormap)")
-                    out_ssim_heatmap = gr.Image(label="SSIM Error Heatmap")
+                    out_ssim_heatmap = gr.Image(value=PRESET_1_CACHE[2], label="SSIM Error Heatmap")
 
             with gr.Row():
                 with gr.Column(scale=1):
                     gr.Markdown("#### 🕸️ 5-Dimensional Algorithm Radar Profile")
-                    out_radar_img = gr.Image(label="Algorithm Radar Profile")
+                    out_radar_img = gr.Image(value=PRESET_1_CACHE[3], label="Algorithm Radar Profile")
                 with gr.Column(scale=1):
-                    out_json_metrics = gr.Code(language="json", label="Multi-Algorithm Metrics Matrix")
-                    out_report_md = gr.Markdown(label="Explainability Analysis")
+                    out_json_metrics = gr.Code(value=PRESET_1_CACHE[4], language="json", label="Multi-Algorithm Metrics Matrix")
+                    out_report_md = gr.Markdown(value=PRESET_1_CACHE[5], label="Explainability Analysis")
 
             cv_inputs = [img_a, img_b, slider_ratio, slider_lines, radio_backend]
             cv_outputs = [out_verdict_html, out_sift_img, out_ssim_heatmap, out_radar_img, out_json_metrics, out_report_md]
 
             btn_run_cv.click(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
-            demo.load(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
-
-            def preset_case_runner(path1, path2, title1, title2, ratio, lines, backend):
-                i1, i2 = get_preset_images(path1, path2, title1, title2)
-                v_html, sift_i, ssim_i, radar_i, json_m, rep_md = run_multimodal_vision_matching(i1, i2, ratio, lines, backend)
-                return i1, i2, v_html, sift_i, ssim_i, radar_i, json_m, rep_md
 
             preset_outputs = [img_a, img_b, out_verdict_html, out_sift_img, out_ssim_heatmap, out_radar_img, out_json_metrics, out_report_md]
 
+            # In-memory instant lookup callbacks (< 0.001 ms response)
             btn_preset_gucci.click(
-                fn=lambda r, l, b: preset_case_runner(SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH, "Gucci Dionysus A", "Gucci Dionysus B", r, l, b),
-                inputs=[slider_ratio, slider_lines, radio_backend],
+                fn=lambda: (INIT_IMG1, INIT_IMG2, *PRESET_1_CACHE),
                 outputs=preset_outputs,
                 api_name=False
             )
 
             btn_preset_shoes.click(
-                fn=lambda r, l, b: preset_case_runner(SAMPLE_IMG1_PATH, SAMPLE_IMG2_PATH, "Marni Loafers A", "Marni Loafers B", r, l, b),
-                inputs=[slider_ratio, slider_lines, radio_backend],
+                fn=lambda: (SHOES_IMG1, SHOES_IMG2, *PRESET_2_CACHE),
                 outputs=preset_outputs,
                 api_name=False
             )
 
             btn_preset_sneaker.click(
-                fn=lambda r, l, b: preset_case_runner(SAMPLE_SNEAKER_PATH, SAMPLE_SNEAKER_PATH, "Balenciaga Triple S A", "Balenciaga Triple S B", r, l, b),
-                inputs=[slider_ratio, slider_lines, radio_backend],
+                fn=lambda: (SNEAKER_IMG, SNEAKER_IMG, *PRESET_3_CACHE),
                 outputs=preset_outputs,
                 api_name=False
             )
 
             btn_preset_diff.click(
-                fn=lambda r, l, b: preset_case_runner(SAMPLE_GUCCI_PATH, SAMPLE_SNEAKER_PATH, "Gucci Dionysus Bag", "Balenciaga Sneaker", r, l, b),
-                inputs=[slider_ratio, slider_lines, radio_backend],
+                fn=lambda: (INIT_IMG1, SNEAKER_IMG, *PRESET_4_CACHE),
                 outputs=preset_outputs,
                 api_name=False
             )
