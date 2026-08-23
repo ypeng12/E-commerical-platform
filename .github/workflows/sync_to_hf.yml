@@ -10,12 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Hugging Face Hub CLI
+        run: |
+          python -m pip install --upgrade pip
+          pip install "huggingface_hub>=0.24.6"
 
       - name: Push to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git push https://ypeng12:$HF_TOKEN@huggingface.co/spaces/Ypeng12/E-commerce-platform main --force
+          if [ -z "$HF_TOKEN" ]; then
+            echo "❌ Error: HF_TOKEN secret is missing in GitHub Repository Secrets."
+            echo "Please add HF_TOKEN under GitHub Repo -> Settings -> Secrets and variables -> Actions"
+            exit 1
+          fi
+          huggingface-cli upload Ypeng12/E-commerce-platform . --type space --token "$HF_TOKEN" --exclude ".venv/*" --exclude ".git/*" --exclude "moden/*"
