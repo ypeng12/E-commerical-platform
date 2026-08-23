@@ -980,4 +980,4 @@ VACUUM {table_name};"""
             p3_btn.click(demo_redshift_etl, inputs=[p3_tbl, p3_s3, p3_start, p3_end], outputs=[p3_code], api_name=False)
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    demo.launch(server_name="0.0.0.0", server_port=7860, ssr=False)
