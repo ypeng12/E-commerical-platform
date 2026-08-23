@@ -23,13 +23,18 @@ os.environ.setdefault("REDIS_ENDPOINT", "127.0.0.1")
 SAMPLE_IMG1_PATH = os.path.join(BASE_DIR, "sample_cover.jpg")
 SAMPLE_IMG2_PATH = os.path.join(BASE_DIR, "sample_merchant.jpg")
 SAMPLE_GUCCI_PATH = os.path.join(BASE_DIR, "sample_gucci.jpg")
+SAMPLE_GUCCI_SSENSE_PATH = os.path.join(BASE_DIR, "sample_gucci_ssense.jpg")
 SAMPLE_GUCCI_ANGLE_PATH = os.path.join(BASE_DIR, "sample_gucci_angle.jpg")
 SAMPLE_SNEAKER_PATH = os.path.join(BASE_DIR, "sample_sneaker.jpg")
+SAMPLE_SNEAKER_END_PATH = os.path.join(BASE_DIR, "sample_sneaker_end.jpg")
 SAMPLE_LOEWE_PATH = os.path.join(BASE_DIR, "sample_loewe.jpg")
+SAMPLE_LOEWE_MYTHERESA_PATH = os.path.join(BASE_DIR, "sample_loewe_mytheresa.jpg")
 SAMPLE_LOEWE_ANGLE_PATH = os.path.join(BASE_DIR, "sample_loewe_angle.jpg")
 SAMPLE_PRADA_PATH = os.path.join(BASE_DIR, "sample_prada.jpg")
+SAMPLE_PRADA_FARFETCH_PATH = os.path.join(BASE_DIR, "sample_prada_farfetch.jpg")
 SAMPLE_PRADA_ANGLE_PATH = os.path.join(BASE_DIR, "sample_prada_angle.jpg")
 SAMPLE_YSL_PATH = os.path.join(BASE_DIR, "sample_ysl.jpg")
+SAMPLE_YSL_NETAPORTER_PATH = os.path.join(BASE_DIR, "sample_ysl_netaporter.jpg")
 SAMPLE_YSL_ANGLE_PATH = os.path.join(BASE_DIR, "sample_ysl_angle.jpg")
 
 
@@ -329,43 +334,20 @@ def create_styled_product_image(title, subtitle="Platform Image", color_bg=(245,
     cv2.putText(img, subtitle, (25, 330), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (100, 116, 139), 1)
     return img
 
-def simulate_cross_merchant_variant(img_rgb):
-    if img_rgb is None:
-        return None
-    bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
-    h, w = bgr.shape[:2]
-
-    # Studio lighting & contrast shift (Farfetch warm studio vs SSENSE cool white studio)
-    bgr_variant = cv2.convertScaleAbs(bgr, alpha=0.97, beta=6)
-
-    # Color temperature tint shift
-    bgr_float = bgr_variant.astype(np.float32)
-    bgr_float[:, :, 0] = np.clip(bgr_float[:, :, 0] * 1.02, 0, 255)
-    bgr_float[:, :, 2] = np.clip(bgr_float[:, :, 2] * 0.97, 0, 255)
-    bgr_variant = bgr_float.astype(np.uint8)
-
-    # Micro margin shift (simulate aspect ratio & cropping difference)
-    pad = max(2, int(w * 0.015))
-    padded = cv2.copyMakeBorder(bgr_variant, pad, pad, pad, pad, cv2.BORDER_CONSTANT, value=(250, 250, 250))
-    resized = cv2.resize(padded, (w, h))
-
-    return cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
-
-
 # =========================================================================
 # PRE-COMPUTED IN-MEMORY PRESET CACHE (INSTANT 0.0001ms CLICK RESPONSE)
 # =========================================================================
 
-INIT_IMG1 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_fallback_image("Gucci Dionysus A")
-INIT_IMG2 = simulate_cross_merchant_variant(INIT_IMG1)
+INIT_IMG1 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_fallback_image("Gucci Dionysus Farfetch")
+INIT_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_SSENSE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_SSENSE_PATH) else INIT_IMG1.copy()
 PRESET_1_CACHE = run_multimodal_vision_matching(INIT_IMG1, INIT_IMG2)
 
 SHOES_IMG1 = cv2.cvtColor(cv2.imread(SAMPLE_IMG1_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG1_PATH) else create_fallback_image("Marni Loafers A")
 SHOES_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_IMG2_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG2_PATH) else create_fallback_image("Marni Loafers B")
 PRESET_2_CACHE = run_multimodal_vision_matching(SHOES_IMG1, SHOES_IMG2)
 
-SNEAKER_IMG = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_PATH) else create_fallback_image("Balenciaga Triple S")
-SNEAKER_IMG2 = simulate_cross_merchant_variant(SNEAKER_IMG)
+SNEAKER_IMG = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_PATH) else create_fallback_image("Balenciaga Triple S SSENSE")
+SNEAKER_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_END_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_END_PATH) else SNEAKER_IMG.copy()
 PRESET_3_CACHE = run_multimodal_vision_matching(SNEAKER_IMG, SNEAKER_IMG2)
 
 PRESET_4_CACHE = run_multimodal_vision_matching(INIT_IMG1, SNEAKER_IMG)
@@ -377,63 +359,63 @@ def fetch_merchant_images_by_name(query_name):
 
     if "loewe" in q or "puzzle" in q:
         title = "Loewe Small Puzzle Bag in Classic Calfskin"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_LOEWE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_LOEWE_PATH) else create_styled_product_image("Loewe Puzzle Bag", "Platform A: Net-A-Porter")
-        img_b = simulate_cross_merchant_variant(img_a)
+        img_a = cv2.cvtColor(cv2.imread(SAMPLE_LOEWE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_LOEWE_PATH) else create_styled_product_image("Loewe Puzzle Bag", "Net-A-Porter Studio")
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_LOEWE_MYTHERESA_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_LOEWE_MYTHERESA_PATH) else img_a.copy()
         merchants_info = {
-            "source_a": "Net-A-Porter (Studio Warm Lighting Profile)",
-            "source_b": "Mytheresa (Cool White Studio & 1.5% Aspect Ratio Shift)",
+            "source_a": "Net-A-Porter (3/4 Studio Angle & Warm Beige Backdrop)",
+            "source_b": "Mytheresa (Frontal Studio Angle & Pure White Daylight Lighting)",
             "price_info": "Platform A (Net-A-Porter: $3,250) vs Platform B (Mytheresa: $3,100 • 🔥 $150 Savings)",
-            "transform_desc": "Studio Color Temp Shift ($\Delta E = 3.2$), Margin Rescaling, Noise Filtering"
+            "transform_desc": "Real Cross-Retailer Studio Lighting, Shoulder Strap Draping, and Lens Focal Framing Differences"
         }
     elif "prada" in q or "galleria" in q:
         title = "Prada Saffiano Leather Galleria Medium Bag"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_PRADA_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_PRADA_PATH) else create_styled_product_image("Prada Galleria Bag", "Platform A: Saks Fifth Avenue")
-        img_b = simulate_cross_merchant_variant(img_a)
+        img_a = cv2.cvtColor(cv2.imread(SAMPLE_PRADA_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_PRADA_PATH) else create_styled_product_image("Prada Galleria Bag", "Saks Fifth Avenue")
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_PRADA_FARFETCH_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_PRADA_FARFETCH_PATH) else img_a.copy()
         merchants_info = {
-            "source_a": "Saks Fifth Avenue (Studio Direct Flash)",
-            "source_b": "Farfetch (Studio Diffused Lighting & Border Rescale)",
+            "source_a": "Saks Fifth Avenue (Glossy Studio Spotlight & Stand Framing)",
+            "source_b": "Farfetch (Neutral Grey Backdrop & Shoulder Strap Draped Down)",
             "price_info": "Platform A (Saks: $3,950 • 🔥 $150 Savings) vs Platform B (Farfetch: $4,100)",
-            "transform_desc": "Gamma Curve Alteration ($\alpha=0.97, \beta=6$), Sub-pixel Alignment Shift"
+            "transform_desc": "Real Retailer Studio Setup Heterogeneity & Leather Grain SIFT Keypoint Alignment"
         }
     elif "sneaker" in q or "triple s" in q or "balenciaga" in q:
         title = "Balenciaga Triple S Sneaker in Leather & Mesh"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_PATH) else create_styled_product_image("Balenciaga Triple S", "Platform A: SSENSE")
-        img_b = simulate_cross_merchant_variant(img_a)
+        img_a = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_PATH) else create_styled_product_image("Balenciaga Triple S", "SSENSE Studio")
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_END_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_END_PATH) else img_a.copy()
         merchants_info = {
-            "source_a": "SSENSE (Neutral White Backdrop)",
-            "source_b": "End Clothing (Studio Softbox & Color Grading Shift)",
+            "source_a": "SSENSE (Stark White Studio Background & Lateral View)",
+            "source_b": "End Clothing (Concrete Studio Podium & Warm Spotlight Setup)",
             "price_info": "Platform A (SSENSE: $1,150) vs Platform B (End Clothing: $1,090 • 🔥 $60 Savings)",
-            "transform_desc": "Texture Frequency Distortions, RGB Channel Gain Drift"
+            "transform_desc": "Real E-Commerce Studio Background Heterogeneity & Outsole Mesh Texture Alignment"
         }
     elif "marni" in q or "loafer" in q or "shoe" in q:
         title = "Marni Kids Black Mary Jane Loafers"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_IMG1_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG1_PATH) else create_styled_product_image("Marni Loafers", "Platform A: Farfetch")
-        img_b = cv2.cvtColor(cv2.imread(SAMPLE_IMG2_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG2_PATH) else simulate_cross_merchant_variant(img_a)
+        img_a = cv2.cvtColor(cv2.imread(SAMPLE_IMG1_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG1_PATH) else create_styled_product_image("Marni Loafers", "Farfetch")
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_IMG2_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG2_PATH) else img_a.copy()
         merchants_info = {
-            "source_a": "Farfetch (Platform Cover - Softbox Lighting)",
-            "source_b": "SSENSE (Merchant Cover - High Contrast Studio Lighting)",
+            "source_a": "Farfetch (Platform Studio Cover Photo - Softbox Lighting)",
+            "source_b": "SSENSE (Merchant Studio Cover Photo - High Contrast Studio Lighting)",
             "price_info": "Platform A (Farfetch: $225) vs Platform B (SSENSE: $205 • 🔥 $20 Savings)",
-            "transform_desc": "Hardware Metal Reflection Variance & Leather Grain Noise Alignment"
+            "transform_desc": "Hardware Buckle Reflection Variance & Genuine Leather Grain Correspondence"
         }
     elif "saint laurent" in q or "ysl" in q or "loulou" in q:
         title = "Saint Laurent Loulou Small Chain Shoulder Bag"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_YSL_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_YSL_PATH) else create_styled_product_image("YSL Loulou Bag", "Platform A: Saks Fifth Avenue")
-        img_b = simulate_cross_merchant_variant(img_a)
+        img_a = cv2.cvtColor(cv2.imread(SAMPLE_YSL_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_YSL_PATH) else create_styled_product_image("YSL Loulou Bag", "Saks Fifth Avenue")
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_YSL_NETAPORTER_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_YSL_NETAPORTER_PATH) else img_a.copy()
         merchants_info = {
-            "source_a": "Saks Fifth Avenue (Studio Spotlight)",
-            "source_b": "Net-A-Porter (Studio Ambient Lighting & Frame Padding)",
+            "source_a": "Saks Fifth Avenue (Studio Spotlight & Chain Draped Down)",
+            "source_b": "Net-A-Porter (Soft Warm Beige Studio & Chain Handle Doubled Up)",
             "price_info": "Platform A (Saks: $2,950) vs Platform B (Net-A-Porter: $2,950 • Identical Price)",
-            "transform_desc": "Quilted Pattern Stitch Alignment & Gold Logo Hardware SIFT Invariance"
+            "transform_desc": "Quilted V-Stitch Alignment & YSL Gold Hardware Logo Feature Extraction"
         }
     else:
         title = f"{query_name.title() if query_name else 'Gucci Dionysus GG Small Shoulder Bag'}"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_styled_product_image(title, "Platform A: Farfetch")
-        img_b = simulate_cross_merchant_variant(img_a)
+        img_a = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_styled_product_image(title, "Farfetch")
+        img_b = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_SSENSE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_SSENSE_PATH) else img_a.copy()
         merchants_info = {
-            "source_a": "Farfetch (Studio Warm Lighting Profile)",
-            "source_b": "SSENSE (Cool Studio Lighting & 1.5% Padding Rescale)",
+            "source_a": "Farfetch (Warm Studio Tabletop Setup & Double Chain Top)",
+            "source_b": "SSENSE (Cool Stark White Studio & Chain Draped Front)",
             "price_info": "Platform A (Farfetch: $2,980) vs Platform B (SSENSE: $2,850 • 🔥 $130 Savings)",
-            "transform_desc": "GG Monogram Canvas Alignment, CIELAB $\Delta E=4.1$ Lighting Calibration"
+            "transform_desc": "GG Monogram Pattern Matching & Tiger Head Spur Hardware Feature Alignment"
         }
 
     return img_a, img_b, title, merchants_info
