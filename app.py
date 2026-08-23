@@ -241,6 +241,11 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
     engine_name = "C++17 Native SIMD Engine (O3 / AVX2 Compiled Binary)" if (is_cpp_mode and os.path.exists(cpp_binary)) else "Python / OpenCV Subsystem"
     if is_cpp_mode and os.path.exists(cpp_binary):
         try:
+            if not os.access(cpp_binary, os.X_OK):
+                try:
+                    os.chmod(cpp_binary, 0o755)
+                except Exception:
+                    pass
             cpp_out = subprocess.check_output([cpp_binary, SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH], text=True)
             cpp_data = json.loads(cpp_out)
             elapsed_ms = round(cpp_data.get("Total C++ Latency (ms)", 0.0002), 4)
