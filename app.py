@@ -33,6 +33,13 @@ def load_as_bgr(img_input):
     if img_input is None or img_input == "":
         return None
     try:
+        if isinstance(img_input, dict):
+            path = img_input.get("path") or img_input.get("name") or img_input.get("url")
+            if path:
+                return load_as_bgr(path)
+            sub = img_input.get("composite") or img_input.get("background")
+            if sub is not None:
+                return load_as_bgr(sub)
         if isinstance(img_input, str):
             if os.path.exists(img_input):
                 pil_img = Image.open(img_input).convert("RGB")
@@ -49,6 +56,18 @@ def load_as_bgr(img_input):
     except Exception as e:
         print(f"load_as_bgr exception: {e}")
     return None
+
+
+def create_fallback_image(title="LUXURY PRODUCT"):
+    img = np.full((500, 500, 3), (240, 240, 240), dtype=np.uint8)
+    for x in range(0, 500, 25):
+        cv2.line(img, (x, 0), (x, 500), (220, 220, 220), 1)
+        cv2.line(img, (0, x), (500, x), (220, 220, 220), 1)
+    cv2.rectangle(img, (100, 180), (400, 420), (40, 40, 40), -1)
+    cv2.ellipse(img, (250, 180), (80, 70), 0, 180, 360, (60, 60, 60), 12)
+    cv2.circle(img, (250, 300), 30, (0, 215, 255), -1)
+    cv2.putText(img, title, (80, 470), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (30, 30, 30), 2)
+    return img
 
 
 def resize_image(img, max_dimension=700):
@@ -100,10 +119,21 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
     bgr1 = load_as_bgr(image1_input)
     bgr2 = load_as_bgr(image2_input)
 
-    if bgr1 is None and os.path.exists(SAMPLE_IMG1_PATH):
-        bgr1 = cv2.imread(SAMPLE_IMG1_PATH)
-    if bgr2 is None and os.path.exists(SAMPLE_IMG2_PATH):
-        bgr2 = cv2.imread(SAMPLE_IMG2_PATH)
+    if bgr1 is None:
+        if os.path.exists(SAMPLE_GUCCI_PATH):
+            bgr1 = cv2.imread(SAMPLE_GUCCI_PATH)
+        elif os.path.exists(SAMPLE_IMG1_PATH):
+            bgr1 = cv2.imread(SAMPLE_IMG1_PATH)
+        else:
+            bgr1 = create_fallback_image("Gucci Dionysus Bag")
+
+    if bgr2 is None:
+        if os.path.exists(SAMPLE_GUCCI_PATH):
+            bgr2 = cv2.imread(SAMPLE_GUCCI_PATH)
+        elif os.path.exists(SAMPLE_IMG2_PATH):
+            bgr2 = cv2.imread(SAMPLE_IMG2_PATH)
+        else:
+            bgr2 = create_fallback_image("Merchant Item")
 
     if bgr1 is None or bgr2 is None:
         fig_empty, _ = plt.subplots(figsize=(4, 4), facecolor='#0F172A')
@@ -473,24 +503,28 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS
             btn_run_cv.click(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
             demo.load(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
 
-            # Preset Callbacks
+            def get_preset_images(path1, path2, title1="Luxury Item A", title2="Luxury Item B"):
+                i1 = cv2.cvtColor(cv2.imread(path1), cv2.COLOR_BGR2RGB) if os.path.exists(path1) else create_fallback_image(title1)
+                i2 = cv2.cvtColor(cv2.imread(path2), cv2.COLOR_BGR2RGB) if os.path.exists(path2) else create_fallback_image(title2)
+                return i1, i2
+
             btn_preset_gucci.click(
-                lambda: (SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH),
+                lambda: get_preset_images(SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH, "Gucci Dionysus A", "Gucci Dionysus B"),
                 outputs=[img_a, img_b]
             ).then(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs)
 
             btn_preset_shoes.click(
-                lambda: (SAMPLE_IMG1_PATH, SAMPLE_IMG2_PATH),
+                lambda: get_preset_images(SAMPLE_IMG1_PATH, SAMPLE_IMG2_PATH, "Marni Loafers A", "Marni Loafers B"),
                 outputs=[img_a, img_b]
             ).then(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs)
 
             btn_preset_sneaker.click(
-                lambda: (SAMPLE_SNEAKER_PATH, SAMPLE_SNEAKER_PATH),
+                lambda: get_preset_images(SAMPLE_SNEAKER_PATH, SAMPLE_SNEAKER_PATH, "Balenciaga Triple S A", "Balenciaga Triple S B"),
                 outputs=[img_a, img_b]
             ).then(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs)
 
             btn_preset_diff.click(
-                lambda: (SAMPLE_GUCCI_PATH, SAMPLE_SNEAKER_PATH),
+                lambda: get_preset_images(SAMPLE_GUCCI_PATH, SAMPLE_SNEAKER_PATH, "Gucci Dionysus Bag", "Balenciaga Sneaker"),
                 outputs=[img_a, img_b]
             ).then(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs)
 
