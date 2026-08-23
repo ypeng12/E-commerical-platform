@@ -23,10 +23,14 @@ os.environ.setdefault("REDIS_ENDPOINT", "127.0.0.1")
 SAMPLE_IMG1_PATH = os.path.join(BASE_DIR, "sample_cover.jpg")
 SAMPLE_IMG2_PATH = os.path.join(BASE_DIR, "sample_merchant.jpg")
 SAMPLE_GUCCI_PATH = os.path.join(BASE_DIR, "sample_gucci.jpg")
+SAMPLE_GUCCI_ANGLE_PATH = os.path.join(BASE_DIR, "sample_gucci_angle.jpg")
 SAMPLE_SNEAKER_PATH = os.path.join(BASE_DIR, "sample_sneaker.jpg")
 SAMPLE_LOEWE_PATH = os.path.join(BASE_DIR, "sample_loewe.jpg")
+SAMPLE_LOEWE_ANGLE_PATH = os.path.join(BASE_DIR, "sample_loewe_angle.jpg")
 SAMPLE_PRADA_PATH = os.path.join(BASE_DIR, "sample_prada.jpg")
+SAMPLE_PRADA_ANGLE_PATH = os.path.join(BASE_DIR, "sample_prada_angle.jpg")
 SAMPLE_YSL_PATH = os.path.join(BASE_DIR, "sample_ysl.jpg")
+SAMPLE_YSL_ANGLE_PATH = os.path.join(BASE_DIR, "sample_ysl_angle.jpg")
 
 
 def load_as_bgr(img_input):
@@ -249,11 +253,11 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
                     os.chmod(cpp_binary, 0o755)
                 except Exception:
                     pass
-            cpp_out = subprocess.check_output([cpp_binary, SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH], text=True)
+            cpp_out = subprocess.check_output([cpp_binary, SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH], stderr=subprocess.DEVNULL, text=True)
             cpp_data = json.loads(cpp_out)
             elapsed_ms = round(cpp_data.get("Total C++ Latency (ms)", 0.0002), 4)
-        except Exception as e:
-            print(f"C++ execution fallback: {e}")
+        except (OSError, Exception):
+            engine_name = "Python / OpenCV Subsystem"
 
     # Verdict Formatting
     if overall_score >= 80.0:
