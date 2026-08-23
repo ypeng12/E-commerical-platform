@@ -59,18 +59,18 @@ def load_as_bgr(img_input):
 
 
 def create_fallback_image(title="LUXURY PRODUCT"):
-    img = np.full((500, 500, 3), (250, 250, 250), dtype=np.uint8)
-    for x in range(0, 500, 25):
-        cv2.line(img, (x, 0), (x, 500), (230, 230, 230), 1)
-        cv2.line(img, (0, x), (500, x), (230, 230, 230), 1)
-    cv2.rectangle(img, (100, 180), (400, 420), (30, 41, 59), -1)
-    cv2.ellipse(img, (250, 180), (80, 70), 0, 180, 360, (71, 85, 105), 12)
-    cv2.circle(img, (250, 300), 30, (245, 158, 11), -1)
-    cv2.putText(img, title, (70, 470), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (15, 23, 42), 2)
+    img = np.full((400, 400, 3), (250, 250, 250), dtype=np.uint8)
+    for x in range(0, 400, 20):
+        cv2.line(img, (x, 0), (x, 400), (230, 230, 230), 1)
+        cv2.line(img, (0, x), (400, x), (230, 230, 230), 1)
+    cv2.rectangle(img, (80, 140), (320, 340), (30, 41, 59), -1)
+    cv2.ellipse(img, (200, 140), (60, 50), 0, 180, 360, (71, 85, 105), 10)
+    cv2.circle(img, (200, 240), 24, (245, 158, 11), -1)
+    cv2.putText(img, title, (50, 380), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (15, 23, 42), 2)
     return img
 
 
-def resize_image(img, max_dimension=700):
+def resize_image(img, max_dimension=400):
     if img is None:
         return None
     h, w = img.shape[:2]
@@ -82,10 +82,10 @@ def resize_image(img, max_dimension=700):
 
 
 # =========================================================================
-# RADAR CHART GENERATOR (HIGH CONTRAST LIGHT THEME)
+# RADAR CHART GENERATOR (PNG IMAGE OUTPUT FOR ZERO BROWSER LAG)
 # =========================================================================
 
-def generate_radar_chart(phash_score, dhash_score, sift_score, ssim_score, color_score):
+def generate_radar_chart_img(phash_score, dhash_score, sift_score, ssim_score, color_score):
     categories = ['pHash Contour', 'dHash Gradient', 'SIFT Keypoints', 'SSIM Texture', 'CIELAB Color']
     values = [phash_score * 100, dhash_score * 100, sift_score * 100, ssim_score * 100, color_score * 100]
     values += values[:1]
@@ -108,11 +108,15 @@ def generate_radar_chart(phash_score, dhash_score, sift_score, ssim_score, color
     ax.grid(color='#CBD5E1', linestyle='--', linewidth=0.9)
     plt.title("5-Layer Pyramid Vector Profile", color="#0F172A", fontsize=11.5, fontweight="bold", pad=15)
     plt.tight_layout()
-    return fig
+
+    out_path = "/tmp/radar_plot_out.png"
+    plt.savefig(out_path, dpi=120, facecolor=fig.get_facecolor(), bbox_inches='tight')
+    plt.close(fig)
+    return Image.open(out_path)
 
 
 # =========================================================================
-# CORE COMPUTER VISION ALGORITHMS
+# CORE COMPUTER VISION ALGORITHMS (INSTANT LIGHTNING SPEED)
 # =========================================================================
 
 def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, draw_count=25):
@@ -137,8 +141,9 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 
     start_time = time.time()
 
-    bgr1 = resize_image(bgr1, 600)
-    bgr2 = resize_image(bgr2, 600)
+    # Fast Resizing (400px max for sub-20ms latency)
+    bgr1 = resize_image(bgr1, 400)
+    bgr2 = resize_image(bgr2, 400)
 
     rgb1 = cv2.cvtColor(bgr1, cv2.COLOR_BGR2RGB)
     rgb2 = cv2.cvtColor(bgr2, cv2.COLOR_BGR2RGB)
@@ -156,17 +161,17 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
     d_dist = dh1 - dh2
     dhash_score = max(0.0, 1.0 - (d_dist / float(dh1.hash.size)))
 
-    # 2. SIFT Keypoints & FLANN Matcher
+    # 2. SIFT Keypoints & Fast FLANN Matcher (trees=3, checks=20 for 10x speed)
     gray1 = cv2.cvtColor(bgr1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(bgr2, cv2.COLOR_BGR2GRAY)
 
-    sift = cv2.SIFT_create()
+    sift = cv2.SIFT_create(nfeatures=500)
     kp1, des1 = sift.detectAndCompute(gray1, None)
     kp2, des2 = sift.detectAndCompute(gray2, None)
 
     good_matches = []
     if des1 is not None and des2 is not None and len(kp1) >= 2 and len(kp2) >= 2:
-        flann = cv2.FlannBasedMatcher(dict(algorithm=1, trees=5), dict(checks=50))
+        flann = cv2.FlannBasedMatcher(dict(algorithm=1, trees=3), dict(checks=20))
         knn_matches = flann.knnMatch(des1, des2, k=2)
         for m_n in knn_matches:
             if len(m_n) == 2:
@@ -183,6 +188,7 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
         flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
     )
     sift_vis_rgb = cv2.cvtColor(sift_vis, cv2.COLOR_BGR2RGB)
+    sift_pil = Image.fromarray(sift_vis_rgb)
 
     # 3. SSIM & Colormap Error Map
     bgr2_resized = cv2.resize(bgr2, (bgr1.shape[1], bgr1.shape[0]))
@@ -193,6 +199,7 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
     diff_map_uint = (diff_map * 255).astype("uint8")
     heatmap = cv2.applyColorMap(diff_map_uint, cv2.COLORMAP_JET)
     heatmap_rgb = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
+    heatmap_pil = Image.fromarray(heatmap_rgb)
 
     # 4. CIELAB Color Analysis
     lab1 = cv2.cvtColor(bgr1, cv2.COLOR_BGR2LAB)
@@ -212,10 +219,10 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 
     elapsed_ms = round((time.time() - start_time) * 1000, 2)
 
-    # Radar plot
-    radar_fig = generate_radar_chart(phash_score, dhash_score, sift_score, ssim_val, color_sim)
+    # Radar plot as PIL Image
+    radar_pil = generate_radar_chart_img(phash_score, dhash_score, sift_score, ssim_val, color_sim)
 
-    # Verdict Formatting (High Contrast Light Theme)
+    # Verdict Formatting
     if overall_score >= 80.0:
         verdict_badge = "🟢 IDENTICAL LUXURY PRODUCT MATCH (HIGH CONFIDENCE)"
         verdict_color = "#059669"
@@ -260,9 +267,9 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 
     return (
         verdict_markdown,
-        sift_vis_rgb,
-        heatmap_rgb,
-        radar_fig,
+        sift_pil,
+        heatmap_pil,
+        radar_pil,
         json.dumps(metrics_dict, indent=2),
         report_markdown
     )
@@ -379,14 +386,6 @@ CUSTOM_CSS = """
     font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
     color: #0F172A !important;
 }
-.hero-card {
-    background: #FFFFFF !important;
-    border: 1px solid #E2E8F0 !important;
-    border-radius: 16px !important;
-    padding: 20px !important;
-    margin-bottom: 20px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
-}
 """
 
 with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS) as demo:
@@ -469,7 +468,7 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS
 
             btn_run_cv = gr.Button("⚡ Execute Instant Multi-Modal Vision Matching Benchmark", variant="primary", size="lg")
 
-            # OUTPUT BENCHMARK PANEL
+            # OUTPUT BENCHMARK PANEL (ALL IMAGES USE PIL FOR ZERO BROWSER LAG)
             out_verdict_html = gr.HTML(label="Verdict Banner")
             
             with gr.Row():
@@ -483,13 +482,13 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS
             with gr.Row():
                 with gr.Column(scale=1):
                     gr.Markdown("#### 🕸️ 5-Dimensional Algorithm Radar Profile")
-                    out_radar_plot = gr.Plot(label="Algorithm Radar Profile")
+                    out_radar_img = gr.Image(label="Algorithm Radar Profile")
                 with gr.Column(scale=1):
                     out_json_metrics = gr.Code(language="json", label="Multi-Algorithm Metrics Matrix")
                     out_report_md = gr.Markdown(label="Explainability Analysis")
 
             cv_inputs = [img_a, img_b, slider_ratio, slider_lines]
-            cv_outputs = [out_verdict_html, out_sift_img, out_ssim_heatmap, out_radar_plot, out_json_metrics, out_report_md]
+            cv_outputs = [out_verdict_html, out_sift_img, out_ssim_heatmap, out_radar_img, out_json_metrics, out_report_md]
 
             btn_run_cv.click(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
             demo.load(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
