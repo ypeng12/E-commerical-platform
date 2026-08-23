@@ -3,3 +3,4 @@ numpy
 pillow
 imagehash
 scikit-image
+huggingface-hub==0.24.6
