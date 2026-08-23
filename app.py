@@ -420,4 +420,4 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase") as demo:
             p5_btn.click(lambda: """<div style='padding:15px;background:#1E293B;color:#fff;border-radius:8px;'><h2>🔍 Dynamic Scraping & Image Quality Report</h2><p>Driver: Headless Chrome | Status: <span style='color:#10B981;'>PASSED</span></p></div>""", outputs=[p5_html_out], api_name=False)
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(server_name="0.0.0.0", server_port=7860)
