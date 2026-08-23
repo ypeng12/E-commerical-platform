@@ -24,6 +24,9 @@ SAMPLE_IMG1_PATH = os.path.join(BASE_DIR, "sample_cover.jpg")
 SAMPLE_IMG2_PATH = os.path.join(BASE_DIR, "sample_merchant.jpg")
 SAMPLE_GUCCI_PATH = os.path.join(BASE_DIR, "sample_gucci.jpg")
 SAMPLE_SNEAKER_PATH = os.path.join(BASE_DIR, "sample_sneaker.jpg")
+SAMPLE_LOEWE_PATH = os.path.join(BASE_DIR, "sample_loewe.jpg")
+SAMPLE_PRADA_PATH = os.path.join(BASE_DIR, "sample_prada.jpg")
+SAMPLE_YSL_PATH = os.path.join(BASE_DIR, "sample_ysl.jpg")
 
 
 def load_as_bgr(img_input):
@@ -347,13 +350,13 @@ def fetch_merchant_images_by_name(query_name):
 
     if "loewe" in q or "puzzle" in q:
         title = "Loewe Small Puzzle Bag in Classic Calfskin"
-        img_a = create_styled_product_image("Loewe Puzzle Bag", "Platform A: Net-A-Porter", (254, 243, 199), (180, 83, 9))
-        img_b = create_styled_product_image("Loewe Puzzle Bag", "Platform B: Mytheresa", (254, 243, 199), (180, 83, 9))
+        img_a = cv2.cvtColor(cv2.imread(SAMPLE_LOEWE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_LOEWE_PATH) else create_styled_product_image("Loewe Puzzle Bag", "Platform A: Net-A-Porter")
+        img_b = img_a.copy()
         merchants_info = "Platform A (Net-A-Porter: $3,250) vs Platform B (Mytheresa: $3,100 • 🔥 $150 Savings)"
     elif "prada" in q or "galleria" in q:
         title = "Prada Saffiano Leather Galleria Medium Bag"
-        img_a = create_styled_product_image("Prada Galleria Bag", "Platform A: Saks Fifth Avenue", (224, 231, 255), (67, 56, 202))
-        img_b = create_styled_product_image("Prada Galleria Bag", "Platform B: Farfetch", (224, 231, 255), (67, 56, 202))
+        img_a = cv2.cvtColor(cv2.imread(SAMPLE_PRADA_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_PRADA_PATH) else create_styled_product_image("Prada Galleria Bag", "Platform A: Saks Fifth Avenue")
+        img_b = img_a.copy()
         merchants_info = "Platform A (Saks: $3,950 • 🔥 $150 Savings) vs Platform B (Farfetch: $4,100)"
     elif "sneaker" in q or "triple s" in q or "balenciaga" in q:
         title = "Balenciaga Triple S Sneaker in Leather & Mesh"
@@ -367,8 +370,8 @@ def fetch_merchant_images_by_name(query_name):
         merchants_info = "Platform A (Farfetch: $225) vs Platform B (SSENSE: $205 • 🔥 $20 Savings)"
     elif "saint laurent" in q or "ysl" in q or "loulou" in q:
         title = "Saint Laurent Loulou Small Chain Shoulder Bag"
-        img_a = create_styled_product_image("YSL Loulou Bag", "Platform A: Saks Fifth Avenue", (243, 244, 246), (17, 24, 39))
-        img_b = create_styled_product_image("YSL Loulou Bag", "Platform B: Net-A-Porter", (243, 244, 246), (17, 24, 39))
+        img_a = cv2.cvtColor(cv2.imread(SAMPLE_YSL_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_YSL_PATH) else create_styled_product_image("YSL Loulou Bag", "Platform A: Saks Fifth Avenue")
+        img_b = img_a.copy()
         merchants_info = "Platform A (Saks: $2,950) vs Platform B (Net-A-Porter: $2,950 • Identical Price)"
     else:
         title = f"{query_name.title() if query_name else 'Gucci Dionysus GG Small Shoulder Bag'}"
