@@ -514,25 +514,40 @@ with gr.Blocks(title="Multi-Modal Vision & Data Showcase Engine", css=CUSTOM_CSS
             btn_run_cv.click(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
             demo.load(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs, api_name=False)
 
+            def preset_case_runner(path1, path2, title1, title2, ratio, lines, backend):
+                i1, i2 = get_preset_images(path1, path2, title1, title2)
+                v_html, sift_i, ssim_i, radar_i, json_m, rep_md = run_multimodal_vision_matching(i1, i2, ratio, lines, backend)
+                return i1, i2, v_html, sift_i, ssim_i, radar_i, json_m, rep_md
+
+            preset_outputs = [img_a, img_b, out_verdict_html, out_sift_img, out_ssim_heatmap, out_radar_img, out_json_metrics, out_report_md]
+
             btn_preset_gucci.click(
-                lambda: get_preset_images(SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH, "Gucci Dionysus A", "Gucci Dionysus B"),
-                outputs=[img_a, img_b]
-            ).then(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs)
+                fn=lambda r, l, b: preset_case_runner(SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_PATH, "Gucci Dionysus A", "Gucci Dionysus B", r, l, b),
+                inputs=[slider_ratio, slider_lines, radio_backend],
+                outputs=preset_outputs,
+                api_name=False
+            )
 
             btn_preset_shoes.click(
-                lambda: get_preset_images(SAMPLE_IMG1_PATH, SAMPLE_IMG2_PATH, "Marni Loafers A", "Marni Loafers B"),
-                outputs=[img_a, img_b]
-            ).then(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs)
+                fn=lambda r, l, b: preset_case_runner(SAMPLE_IMG1_PATH, SAMPLE_IMG2_PATH, "Marni Loafers A", "Marni Loafers B", r, l, b),
+                inputs=[slider_ratio, slider_lines, radio_backend],
+                outputs=preset_outputs,
+                api_name=False
+            )
 
             btn_preset_sneaker.click(
-                lambda: get_preset_images(SAMPLE_SNEAKER_PATH, SAMPLE_SNEAKER_PATH, "Balenciaga Triple S A", "Balenciaga Triple S B"),
-                outputs=[img_a, img_b]
-            ).then(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs)
+                fn=lambda r, l, b: preset_case_runner(SAMPLE_SNEAKER_PATH, SAMPLE_SNEAKER_PATH, "Balenciaga Triple S A", "Balenciaga Triple S B", r, l, b),
+                inputs=[slider_ratio, slider_lines, radio_backend],
+                outputs=preset_outputs,
+                api_name=False
+            )
 
             btn_preset_diff.click(
-                lambda: get_preset_images(SAMPLE_GUCCI_PATH, SAMPLE_SNEAKER_PATH, "Gucci Dionysus Bag", "Balenciaga Sneaker"),
-                outputs=[img_a, img_b]
-            ).then(fn=run_multimodal_vision_matching, inputs=cv_inputs, outputs=cv_outputs)
+                fn=lambda r, l, b: preset_case_runner(SAMPLE_GUCCI_PATH, SAMPLE_SNEAKER_PATH, "Gucci Dionysus Bag", "Balenciaga Sneaker", r, l, b),
+                inputs=[slider_ratio, slider_lines, radio_backend],
+                outputs=preset_outputs,
+                api_name=False
+            )
 
         # -----------------------------------------------------------------
         # TAB 2: REAL 362+ MERCHANT PARSER ENGINE
