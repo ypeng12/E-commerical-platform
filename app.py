@@ -419,7 +419,7 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
             "parser_module": "modules.crawl_product.merchants.ssense",
             "confidence": 98.4,
             "badge_color": "#10B981",
-            "store_url": "https://www.ssense.com/en-us/women/product/gucci/dionysus-bag/252379M711000"
+            "store_url": "https://www.ssense.com/en-us/women/designers/gucci"
         },
         {
             "merchant": "Farfetch",
@@ -436,7 +436,7 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
             "parser_module": "modules.crawl_product.merchants.farfetch",
             "confidence": 96.2,
             "badge_color": "#6366F1",
-            "store_url": "https://www.farfetch.com/shopping/women/gucci-dionysus-bag-item-15421001.aspx"
+            "store_url": "https://www.farfetch.com/shopping/women/gucci/items.aspx"
         },
         {
             "merchant": "Saks Fifth Avenue",
@@ -453,7 +453,7 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
             "parser_module": "modules.crawl_product.merchants.saks",
             "confidence": 94.8,
             "badge_color": "#6366F1",
-            "store_url": "https://www.saksfifthavenue.com/product/gucci-dionysus-0400014295101.html"
+            "store_url": "https://www.saksfifthavenue.com/b/gucci"
         },
         {
             "merchant": "Net-A-Porter",
@@ -470,7 +470,7 @@ def reverse_image_search_and_parse(uploaded_image, merchant_filter="Top 8 Global
             "parser_module": "modules.crawl_product.merchants.netaporter",
             "confidence": 93.5,
             "badge_color": "#F59E0B",
-            "store_url": "https://www.net-a-porter.com/en-us/shop/product/gucci/bags/shoulder-bags/dionysus-small-printed-canvas-shoulder-bag/100827391"
+            "store_url": "https://www.net-a-porter.com/en-us/shop/designer/gucci"
         }
     ]
 
