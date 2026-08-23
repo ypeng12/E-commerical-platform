@@ -3,3 +3,5 @@ numpy
 pillow
 imagehash
 scikit-image
+gradio
+pyaudioop
