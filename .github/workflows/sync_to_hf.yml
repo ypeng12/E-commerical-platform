@@ -22,7 +22,7 @@ jobs:
       - name: Install Hugging Face Hub CLI
         run: |
           python -m pip install --upgrade pip
-          pip install "huggingface_hub>=0.24.6"
+          pip install "huggingface_hub[cli]>=0.24.6"
 
       - name: Push to Hugging Face Space
         env:
@@ -33,4 +33,4 @@ jobs:
             echo "Please add HF_TOKEN under GitHub Repo -> Settings -> Secrets and variables -> Actions"
             exit 1
           fi
-          huggingface-cli upload Ypeng12/E-commerce-platform . --type space --token "$HF_TOKEN" --exclude ".venv/*" --exclude ".git/*" --exclude "moden/*"
+          hf upload Ypeng12/E-commerce-platform . . --type space --token "$HF_TOKEN" --exclude ".venv/*" --exclude ".git/*" --exclude ".github/*" --exclude ".agents/*" --exclude "__pycache__/*"
