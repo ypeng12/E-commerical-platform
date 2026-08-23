@@ -1,4 +1,14 @@
-
+---
+title: E-Commerce Platform Multi-Modal Vision Engine
+emoji: 🚀
+colorFrom: indigo
+colorTo: green
+sdk: gradio
+sdk_version: 4.44.0
+app_file: app.py
+pinned: false
+license: mit
+---
 
 <div align="center">
 
