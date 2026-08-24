@@ -12,7 +12,7 @@ from skimage.metrics import structural_similarity as ssim
 import gradio as gr
 
 # Configure sys.path and env for crawl_product modules
-BASE_DIR = os.path.dirname(__file__)
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 CRAWL_MODULE_DIR = os.path.join(BASE_DIR, "modules", "crawl_product")
 if os.path.exists(CRAWL_MODULE_DIR) and CRAWL_MODULE_DIR not in sys.path:
     sys.path.append(CRAWL_MODULE_DIR)
@@ -51,10 +51,11 @@ def load_as_bgr(img_input):
         if isinstance(img_input, str):
             if img_input == "":
                 return None
-            if os.path.exists(img_input):
-                pil_img = Image.open(img_input).convert("RGB")
+            abs_path = img_input if os.path.isabs(img_input) else os.path.join(BASE_DIR, img_input)
+            if os.path.exists(abs_path):
+                pil_img = Image.open(abs_path).convert("RGB")
                 return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
-            bgr = cv2.imread(img_input)
+            bgr = cv2.imread(abs_path)
             if bgr is not None:
                 return bgr
         if isinstance(img_input, dict):
@@ -72,15 +73,7 @@ def load_as_bgr(img_input):
 
 
 def create_fallback_image(title="LUXURY PRODUCT"):
-    img = np.full((350, 350, 3), (250, 250, 250), dtype=np.uint8)
-    for x in range(0, 350, 20):
-        cv2.line(img, (x, 0), (x, 350), (230, 230, 230), 1)
-        cv2.line(img, (0, x), (350, x), (230, 230, 230), 1)
-    cv2.rectangle(img, (70, 120), (280, 290), (30, 41, 59), -1)
-    cv2.ellipse(img, (175, 120), (50, 40), 0, 180, 360, (71, 85, 105), 8)
-    cv2.circle(img, (175, 200), 20, (245, 158, 11), -1)
-    cv2.putText(img, title, (40, 330), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (15, 23, 42), 2)
-    return img
+    return create_styled_product_image(title, "Fallback Image")
 
 
 def resize_image(img, max_dimension=350):
@@ -323,32 +316,60 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 # =========================================================================
 
 def create_styled_product_image(title, subtitle="Platform Image", color_bg=(245, 245, 245), color_fg=(30, 41, 59)):
+    t_lower = (title or "").lower()
     img = np.full((350, 350, 3), color_bg, dtype=np.uint8)
     for x in range(0, 350, 25):
         cv2.line(img, (x, 0), (x, 350), (230, 230, 230), 1)
         cv2.line(img, (0, x), (350, x), (230, 230, 230), 1)
-    cv2.rectangle(img, (60, 90), (290, 270), color_fg, -1)
-    cv2.ellipse(img, (175, 90), (55, 45), 0, 180, 360, (71, 85, 105), 8)
-    cv2.circle(img, (175, 180), 22, (245, 158, 11), -1)
+
+    is_shoe = any(k in t_lower for k in ["sneaker", "shoe", "loafer", "boot", "triple s", "marni", "mary jane"])
+    if is_shoe:
+        # Sneaker / Shoe Outsole & Upper Silhouette
+        pts_sole = np.array([[50, 230], [290, 230], [300, 255], [45, 255]], np.int32)
+        cv2.fillPoly(img, [pts_sole], (210, 215, 220))
+        cv2.polylines(img, [pts_sole], True, (100, 116, 139), 2)
+        pts_upper = np.array([[60, 230], [90, 140], [150, 140], [190, 185], [285, 205], [288, 230]], np.int32)
+        cv2.fillPoly(img, [pts_upper], color_fg)
+        cv2.rectangle(img, (60, 180), (100, 230), (51, 65, 85), -1)
+        pts_toe = np.array([[240, 210], [285, 205], [288, 230], [240, 230]], np.int32)
+        cv2.fillPoly(img, [pts_toe], (71, 85, 105))
+        cv2.ellipse(img, (120, 140), (30, 12), 0, 0, 360, color_bg, -1)
+        cv2.ellipse(img, (120, 140), (30, 12), 0, 0, 360, (71, 85, 105), 2)
+        for y_lace in range(155, 185, 8):
+            cv2.line(img, (145 + (y_lace - 155) // 2, y_lace), (175 + (y_lace - 155) // 2, y_lace), (245, 158, 11), 2)
+    else:
+        # Luxury Handbag / Tote Silhouette
+        cv2.rectangle(img, (60, 90), (290, 270), color_fg, -1)
+        cv2.ellipse(img, (175, 90), (55, 45), 0, 180, 360, (71, 85, 105), 8)
+        cv2.circle(img, (175, 180), 22, (245, 158, 11), -1)
+
     cv2.putText(img, title[:24], (25, 305), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (15, 23, 42), 2)
     cv2.putText(img, subtitle, (25, 330), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (100, 116, 139), 1)
     return img
 
 def load_sample_image_rgb(path, default_title="Fallback Image"):
-    if path and os.path.exists(path):
-        try:
-            pil_img = Image.open(path).convert("RGB")
-            arr = np.array(pil_img)
-            if arr is not None and arr.size > 0 and arr.ndim == 3:
-                return arr
-        except Exception:
-            pass
-        try:
-            bgr = cv2.imread(path)
-            if bgr is not None and bgr.size > 0:
-                return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-        except Exception:
-            pass
+    if path is not None:
+        if isinstance(path, np.ndarray):
+            if path.size > 0 and path.ndim == 3:
+                return path
+        if isinstance(path, Image.Image):
+            return np.array(path.convert("RGB"))
+        if isinstance(path, str) and path.strip():
+            abs_path = path if os.path.isabs(path) else os.path.join(BASE_DIR, path)
+            if os.path.exists(abs_path):
+                try:
+                    pil_img = Image.open(abs_path).convert("RGB")
+                    arr = np.array(pil_img)
+                    if arr is not None and arr.size > 0 and arr.ndim == 3:
+                        return arr
+                except Exception:
+                    pass
+                try:
+                    bgr = cv2.imread(abs_path)
+                    if bgr is not None and bgr.size > 0:
+                        return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+                except Exception:
+                    pass
     return create_fallback_image(default_title)
 
 # =========================================================================
