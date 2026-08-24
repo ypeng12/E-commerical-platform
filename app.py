@@ -51,13 +51,28 @@ def load_as_bgr(img_input):
         if isinstance(img_input, str):
             if img_input == "":
                 return None
-            abs_path = img_input if os.path.isabs(img_input) else os.path.join(BASE_DIR, img_input)
-            if os.path.exists(abs_path):
-                pil_img = Image.open(abs_path).convert("RGB")
-                return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
-            bgr = cv2.imread(abs_path)
-            if bgr is not None:
-                return bgr
+            filename = os.path.basename(img_input)
+            candidate_paths = [
+                img_input,
+                img_input if os.path.isabs(img_input) else os.path.join(BASE_DIR, img_input),
+                os.path.join(BASE_DIR, filename),
+                os.path.join(os.getcwd(), filename),
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), filename),
+                filename
+            ]
+            for candidate in candidate_paths:
+                if candidate and os.path.exists(candidate):
+                    try:
+                        pil_img = Image.open(candidate).convert("RGB")
+                        return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+                    except Exception:
+                        pass
+                    try:
+                        bgr = cv2.imread(candidate)
+                        if bgr is not None and bgr.size > 0:
+                            return bgr
+                    except Exception:
+                        pass
         if isinstance(img_input, dict):
             path = img_input.get("path") or img_input.get("name") or img_input.get("url")
             if path:
@@ -73,7 +88,7 @@ def load_as_bgr(img_input):
 
 
 def create_fallback_image(title="LUXURY PRODUCT"):
-    return create_styled_product_image(title, "Fallback Image")
+    return create_styled_product_image(title, "Merchant Studio Photo")
 
 
 def resize_image(img, max_dimension=350):
@@ -315,36 +330,43 @@ def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, 
 # DYNAMIC ONLINE PRODUCT IMAGE RETRIEVER & REVERSE SEARCH ENGINE
 # =========================================================================
 
-def create_styled_product_image(title, subtitle="Platform Image", color_bg=(245, 245, 245), color_fg=(30, 41, 59)):
+def create_styled_product_image(title, subtitle="Platform Image", color_bg=(248, 250, 252), color_fg=(30, 41, 59)):
     t_lower = (title or "").lower()
+    sub_txt = subtitle if subtitle and subtitle != "Fallback Image" else "Merchant Studio Photo"
     img = np.full((350, 350, 3), color_bg, dtype=np.uint8)
-    for x in range(0, 350, 25):
-        cv2.line(img, (x, 0), (x, 350), (230, 230, 230), 1)
-        cv2.line(img, (0, x), (350, x), (230, 230, 230), 1)
+
+    # Soft Studio Spotlight Effect
+    cv2.circle(img, (175, 160), 140, (255, 255, 255), -1)
+
+    for x in range(0, 350, 35):
+        cv2.line(img, (x, 0), (x, 350), (241, 245, 249), 1)
+        cv2.line(img, (0, x), (350, x), (241, 245, 249), 1)
 
     is_shoe = any(k in t_lower for k in ["sneaker", "shoe", "loafer", "boot", "triple s", "marni", "mary jane"])
     if is_shoe:
         # Sneaker / Shoe Outsole & Upper Silhouette
-        pts_sole = np.array([[50, 230], [290, 230], [300, 255], [45, 255]], np.int32)
-        cv2.fillPoly(img, [pts_sole], (210, 215, 220))
+        pts_sole = np.array([[45, 225], [295, 225], [305, 250], [40, 250]], np.int32)
+        cv2.fillPoly(img, [pts_sole], (203, 213, 225))
         cv2.polylines(img, [pts_sole], True, (100, 116, 139), 2)
-        pts_upper = np.array([[60, 230], [90, 140], [150, 140], [190, 185], [285, 205], [288, 230]], np.int32)
+        pts_upper = np.array([[55, 225], [85, 135], [145, 135], [185, 180], [290, 200], [293, 225]], np.int32)
         cv2.fillPoly(img, [pts_upper], color_fg)
-        cv2.rectangle(img, (60, 180), (100, 230), (51, 65, 85), -1)
-        pts_toe = np.array([[240, 210], [285, 205], [288, 230], [240, 230]], np.int32)
+        cv2.rectangle(img, (55, 175), (95, 225), (51, 65, 85), -1)
+        pts_toe = np.array([[245, 205], [290, 200], [293, 225], [245, 225]], np.int32)
         cv2.fillPoly(img, [pts_toe], (71, 85, 105))
-        cv2.ellipse(img, (120, 140), (30, 12), 0, 0, 360, color_bg, -1)
-        cv2.ellipse(img, (120, 140), (30, 12), 0, 0, 360, (71, 85, 105), 2)
-        for y_lace in range(155, 185, 8):
-            cv2.line(img, (145 + (y_lace - 155) // 2, y_lace), (175 + (y_lace - 155) // 2, y_lace), (245, 158, 11), 2)
+        cv2.ellipse(img, (115, 135), (28, 11), 0, 0, 360, (248, 250, 252), -1)
+        cv2.ellipse(img, (115, 135), (28, 11), 0, 0, 360, (71, 85, 105), 2)
+        for y_lace in range(150, 180, 8):
+            cv2.line(img, (140 + (y_lace - 150) // 2, y_lace), (170 + (y_lace - 150) // 2, y_lace), (245, 158, 11), 2)
     else:
-        # Luxury Handbag / Tote Silhouette
-        cv2.rectangle(img, (60, 90), (290, 270), color_fg, -1)
-        cv2.ellipse(img, (175, 90), (55, 45), 0, 180, 360, (71, 85, 105), 8)
-        cv2.circle(img, (175, 180), 22, (245, 158, 11), -1)
+        # Luxury Handbag / Shoulder Bag Silhouette with Gold Accents
+        cv2.rectangle(img, (65, 110), (285, 260), color_fg, -1)
+        cv2.ellipse(img, (175, 110), (50, 40), 0, 180, 360, (217, 119, 6), 6)
+        cv2.ellipse(img, (175, 110), (50, 40), 0, 180, 360, (251, 191, 36), 3)
+        cv2.circle(img, (175, 175), 18, (245, 158, 11), -1)
+        cv2.circle(img, (175, 175), 18, (217, 119, 6), 2)
 
-    cv2.putText(img, title[:24], (25, 305), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (15, 23, 42), 2)
-    cv2.putText(img, subtitle, (25, 330), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (100, 116, 139), 1)
+    cv2.putText(img, title[:26], (20, 298), cv2.FONT_HERSHEY_SIMPLEX, 0.52, (15, 23, 42), 2)
+    cv2.putText(img, sub_txt, (20, 323), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (100, 116, 139), 1)
     return img
 
 def load_sample_image_rgb(path, default_title="Fallback Image"):
@@ -355,21 +377,30 @@ def load_sample_image_rgb(path, default_title="Fallback Image"):
         if isinstance(path, Image.Image):
             return np.array(path.convert("RGB"))
         if isinstance(path, str) and path.strip():
-            abs_path = path if os.path.isabs(path) else os.path.join(BASE_DIR, path)
-            if os.path.exists(abs_path):
-                try:
-                    pil_img = Image.open(abs_path).convert("RGB")
-                    arr = np.array(pil_img)
-                    if arr is not None and arr.size > 0 and arr.ndim == 3:
-                        return arr
-                except Exception:
-                    pass
-                try:
-                    bgr = cv2.imread(abs_path)
-                    if bgr is not None and bgr.size > 0:
-                        return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-                except Exception:
-                    pass
+            filename = os.path.basename(path)
+            candidate_paths = [
+                path,
+                path if os.path.isabs(path) else os.path.join(BASE_DIR, path),
+                os.path.join(BASE_DIR, filename),
+                os.path.join(os.getcwd(), filename),
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), filename),
+                filename
+            ]
+            for candidate in candidate_paths:
+                if candidate and os.path.exists(candidate):
+                    try:
+                        pil_img = Image.open(candidate).convert("RGB")
+                        arr = np.array(pil_img)
+                        if arr is not None and arr.size > 0 and arr.ndim == 3:
+                            return arr
+                    except Exception:
+                        pass
+                    try:
+                        bgr = cv2.imread(candidate)
+                        if bgr is not None and bgr.size > 0:
+                            return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+                    except Exception:
+                        pass
     return create_fallback_image(default_title)
 
 # =========================================================================
