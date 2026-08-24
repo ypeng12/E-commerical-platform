@@ -1,10 +1,11 @@
 # GitHub Linguist Overrides
-# Exclude HTML test mock files from GitHub repository language bar
+# Exclude HTML test mock files and raw merchant parser scripts from GitHub language stats
 modules/crawl_product/tests/* linguist-vendored
 modules/crawl_product/tests/*.html linguist-vendored
 *.html linguist-vendored
+modules/crawl_product/merchants/* linguist-vendored
 
-# C++ Engine Configuration
-cpp_engine/src/stb_image.h linguist-vendored
+# C++ Native SIMD Engine (Highlight C++ as Primary Core Engine Language)
+cpp_engine/src/stb_image.h linguist-language=C++
 cpp_engine/src/*.cpp linguist-language=C++
 cpp_engine/src/*.hpp linguist-language=C++
