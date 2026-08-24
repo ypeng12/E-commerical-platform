@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include <cstdint>
+#include <cstddef>
 
 struct VisionResult {
     double composite_score;
@@ -17,7 +19,12 @@ struct VisionResult {
     double ssim_score;
     double delta_e;
     std::string verdict;
+    std::string engine_type;
 };
+
+// AVX2 Vectorized Math Utilities
+float simd_avx2_l2_distance_sq(const float* a, const float* b, size_t size);
+float simd_avx2_dot_product(const float* a, const float* b, size_t size);
 
 class VisionPyramidEngine {
 public:

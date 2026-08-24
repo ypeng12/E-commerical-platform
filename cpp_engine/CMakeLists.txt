@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Release)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -ffast-math -flto")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -mavx2 -mfma -ffast-math -flto")
 
 add_executable(vision_cpp_engine
     src/main.cpp
