@@ -334,20 +334,37 @@ def create_styled_product_image(title, subtitle="Platform Image", color_bg=(245,
     cv2.putText(img, subtitle, (25, 330), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (100, 116, 139), 1)
     return img
 
+def load_sample_image_rgb(path, default_title="Fallback Image"):
+    if path and os.path.exists(path):
+        try:
+            pil_img = Image.open(path).convert("RGB")
+            arr = np.array(pil_img)
+            if arr is not None and arr.size > 0 and arr.ndim == 3:
+                return arr
+        except Exception:
+            pass
+        try:
+            bgr = cv2.imread(path)
+            if bgr is not None and bgr.size > 0:
+                return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        except Exception:
+            pass
+    return create_fallback_image(default_title)
+
 # =========================================================================
 # PRE-COMPUTED IN-MEMORY PRESET CACHE (INSTANT 0.0001ms CLICK RESPONSE)
 # =========================================================================
 
-INIT_IMG1 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_fallback_image("Gucci Dionysus Farfetch")
-INIT_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_SSENSE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_SSENSE_PATH) else INIT_IMG1.copy()
+INIT_IMG1 = load_sample_image_rgb(SAMPLE_GUCCI_PATH, "Gucci Dionysus Farfetch")
+INIT_IMG2 = load_sample_image_rgb(SAMPLE_GUCCI_SSENSE_PATH, "Gucci Dionysus SSENSE")
 PRESET_1_CACHE = run_multimodal_vision_matching(INIT_IMG1, INIT_IMG2)
 
-SHOES_IMG1 = cv2.cvtColor(cv2.imread(SAMPLE_IMG1_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG1_PATH) else create_fallback_image("Marni Loafers A")
-SHOES_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_IMG2_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG2_PATH) else create_fallback_image("Marni Loafers B")
+SHOES_IMG1 = load_sample_image_rgb(SAMPLE_IMG1_PATH, "Marni Loafers A")
+SHOES_IMG2 = load_sample_image_rgb(SAMPLE_IMG2_PATH, "Marni Loafers B")
 PRESET_2_CACHE = run_multimodal_vision_matching(SHOES_IMG1, SHOES_IMG2)
 
-SNEAKER_IMG = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_PATH) else create_fallback_image("Balenciaga Triple S SSENSE")
-SNEAKER_IMG2 = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_END_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_END_PATH) else SNEAKER_IMG.copy()
+SNEAKER_IMG = load_sample_image_rgb(SAMPLE_SNEAKER_PATH, "Balenciaga Triple S SSENSE")
+SNEAKER_IMG2 = load_sample_image_rgb(SAMPLE_SNEAKER_END_PATH, "Balenciaga Triple S End")
 PRESET_3_CACHE = run_multimodal_vision_matching(SNEAKER_IMG, SNEAKER_IMG2)
 
 PRESET_4_CACHE = run_multimodal_vision_matching(INIT_IMG1, SNEAKER_IMG)
@@ -359,8 +376,8 @@ def fetch_merchant_images_by_name(query_name):
 
     if "loewe" in q or "puzzle" in q:
         title = "Loewe Small Puzzle Bag in Classic Calfskin"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_LOEWE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_LOEWE_PATH) else create_styled_product_image("Loewe Puzzle Bag", "Net-A-Porter Studio")
-        img_b = cv2.cvtColor(cv2.imread(SAMPLE_LOEWE_MYTHERESA_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_LOEWE_MYTHERESA_PATH) else img_a.copy()
+        img_a = load_sample_image_rgb(SAMPLE_LOEWE_PATH, "Loewe Puzzle Net-A-Porter")
+        img_b = load_sample_image_rgb(SAMPLE_LOEWE_MYTHERESA_PATH, "Loewe Puzzle Mytheresa")
         merchants_info = {
             "source_a": "Net-A-Porter (3/4 Studio Angle & Warm Beige Backdrop)",
             "source_b": "Mytheresa (Frontal Studio Angle & Pure White Daylight Lighting)",
@@ -369,8 +386,8 @@ def fetch_merchant_images_by_name(query_name):
         }
     elif "prada" in q or "galleria" in q:
         title = "Prada Saffiano Leather Galleria Medium Bag"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_PRADA_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_PRADA_PATH) else create_styled_product_image("Prada Galleria Bag", "Saks Fifth Avenue")
-        img_b = cv2.cvtColor(cv2.imread(SAMPLE_PRADA_FARFETCH_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_PRADA_FARFETCH_PATH) else img_a.copy()
+        img_a = load_sample_image_rgb(SAMPLE_PRADA_PATH, "Prada Galleria Saks")
+        img_b = load_sample_image_rgb(SAMPLE_PRADA_FARFETCH_PATH, "Prada Galleria Farfetch")
         merchants_info = {
             "source_a": "Saks Fifth Avenue (Glossy Studio Spotlight & Stand Framing)",
             "source_b": "Farfetch (Neutral Grey Backdrop & Shoulder Strap Draped Down)",
@@ -379,8 +396,8 @@ def fetch_merchant_images_by_name(query_name):
         }
     elif "sneaker" in q or "triple s" in q or "balenciaga" in q:
         title = "Balenciaga Triple S Sneaker in Leather & Mesh"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_PATH) else create_styled_product_image("Balenciaga Triple S", "SSENSE Studio")
-        img_b = cv2.cvtColor(cv2.imread(SAMPLE_SNEAKER_END_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_SNEAKER_END_PATH) else img_a.copy()
+        img_a = load_sample_image_rgb(SAMPLE_SNEAKER_PATH, "Balenciaga Triple S SSENSE")
+        img_b = load_sample_image_rgb(SAMPLE_SNEAKER_END_PATH, "Balenciaga Triple S End")
         merchants_info = {
             "source_a": "SSENSE (Stark White Studio Background & Lateral View)",
             "source_b": "End Clothing (Concrete Studio Podium & Warm Spotlight Setup)",
@@ -389,8 +406,8 @@ def fetch_merchant_images_by_name(query_name):
         }
     elif "marni" in q or "loafer" in q or "shoe" in q:
         title = "Marni Kids Black Mary Jane Loafers"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_IMG1_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG1_PATH) else create_styled_product_image("Marni Loafers", "Farfetch")
-        img_b = cv2.cvtColor(cv2.imread(SAMPLE_IMG2_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_IMG2_PATH) else img_a.copy()
+        img_a = load_sample_image_rgb(SAMPLE_IMG1_PATH, "Marni Loafers Farfetch")
+        img_b = load_sample_image_rgb(SAMPLE_IMG2_PATH, "Marni Loafers SSENSE")
         merchants_info = {
             "source_a": "Farfetch (Platform Studio Cover Photo - Softbox Lighting)",
             "source_b": "SSENSE (Merchant Studio Cover Photo - High Contrast Studio Lighting)",
@@ -399,8 +416,8 @@ def fetch_merchant_images_by_name(query_name):
         }
     elif "saint laurent" in q or "ysl" in q or "loulou" in q:
         title = "Saint Laurent Loulou Small Chain Shoulder Bag"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_YSL_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_YSL_PATH) else create_styled_product_image("YSL Loulou Bag", "Saks Fifth Avenue")
-        img_b = cv2.cvtColor(cv2.imread(SAMPLE_YSL_NETAPORTER_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_YSL_NETAPORTER_PATH) else img_a.copy()
+        img_a = load_sample_image_rgb(SAMPLE_YSL_PATH, "YSL Loulou Saks")
+        img_b = load_sample_image_rgb(SAMPLE_YSL_NETAPORTER_PATH, "YSL Loulou Net-A-Porter")
         merchants_info = {
             "source_a": "Saks Fifth Avenue (Studio Spotlight & Chain Draped Down)",
             "source_b": "Net-A-Porter (Soft Warm Beige Studio & Chain Handle Doubled Up)",
@@ -409,8 +426,8 @@ def fetch_merchant_images_by_name(query_name):
         }
     else:
         title = f"{query_name.title() if query_name else 'Gucci Dionysus GG Small Shoulder Bag'}"
-        img_a = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_PATH) else create_styled_product_image(title, "Farfetch")
-        img_b = cv2.cvtColor(cv2.imread(SAMPLE_GUCCI_SSENSE_PATH), cv2.COLOR_BGR2RGB) if os.path.exists(SAMPLE_GUCCI_SSENSE_PATH) else img_a.copy()
+        img_a = load_sample_image_rgb(SAMPLE_GUCCI_PATH, "Gucci Dionysus Farfetch")
+        img_b = load_sample_image_rgb(SAMPLE_GUCCI_SSENSE_PATH, "Gucci Dionysus SSENSE")
         merchants_info = {
             "source_a": "Farfetch (Warm Studio Tabletop Setup & Double Chain Top)",
             "source_b": "SSENSE (Cool Stark White Studio & Chain Draped Front)",
