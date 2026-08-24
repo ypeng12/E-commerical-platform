@@ -1,0 +1,10 @@
+# GitHub Linguist Overrides
+# Exclude HTML test mock files from GitHub repository language bar
+modules/crawl_product/tests/* linguist-vendored
+modules/crawl_product/tests/*.html linguist-vendored
+*.html linguist-vendored
+
+# C++ Engine Configuration
+cpp_engine/src/stb_image.h linguist-vendored
+cpp_engine/src/*.cpp linguist-language=C++
+cpp_engine/src/*.hpp linguist-language=C++
