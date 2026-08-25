@@ -115,6 +115,99 @@ def load_as_bgr(img_input):
     return None
 
 
+VISITOR_LOG_PATH = os.path.join(BASE_DIR, "visitor_access.log")
+
+def log_visitor(request: gr.Request, action: str, details: str = ""):
+    ip = "Unknown"
+    user_agent = "Unknown"
+    try:
+        if request is not None:
+            if hasattr(request, "headers") and request.headers:
+                forwarded = request.headers.get("x-forwarded-for") or request.headers.get("x-real-ip")
+                if forwarded:
+                    ip = forwarded.split(",")[0].strip()
+                user_agent = request.headers.get("user-agent", "Unknown")
+            if ip == "Unknown" and hasattr(request, "client") and request.client:
+                ip = request.client.host
+
+        now_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        log_entry = f"🌐 [VISITOR LOG] {now_str} | IP: {ip} | Action: {action} | Details: {details} | UA: {user_agent}"
+        print(log_entry)
+
+        with open(VISITOR_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(log_entry + "\n")
+    except Exception as e:
+        print(f"Logging error: {e}")
+
+def get_visitor_audit_html():
+    if not os.path.exists(VISITOR_LOG_PATH):
+        return """<div style="padding: 18px; background: #F8FAFC; border-radius: 10px; border: 1px solid #E2E8F0; color: #64748B; font-size: 13px;">
+            ℹ️ No visitor log entries recorded yet. Interact with the app (Search Product, Click Hot Presets, or Run Matching) to trigger live visitor logging!
+        </div>"""
+    
+    try:
+        with open(VISITOR_LOG_PATH, "r", encoding="utf-8") as f:
+            lines = [line.strip() for line in f if line.strip()]
+        
+        if not lines:
+            return """<div style="padding: 18px; background: #F8FAFC; border-radius: 10px; border: 1px solid #E2E8F0; color: #64748B; font-size: 13px;">
+                ℹ️ Visitor access log is currently empty.
+            </div>"""
+
+        unique_ips = set()
+        rows_html = ""
+        for line in reversed(lines[-50:]):
+            parts = line.split(" | ")
+            if len(parts) >= 4:
+                ts = parts[0].replace("🌐 [VISITOR LOG] ", "")
+                ip = parts[1].replace("IP: ", "")
+                action = parts[2].replace("Action: ", "")
+                details = parts[3].replace("Details: ", "")
+                ua = parts[4].replace("UA: ", "") if len(parts) > 4 else "Unknown"
+                unique_ips.add(ip)
+                
+                rows_html += f"""
+                <tr style="border-bottom: 1px solid #F1F5F9;">
+                    <td style="padding: 10px 14px; font-weight: 600; color: #1E293B; white-space: nowrap;">{ts}</td>
+                    <td style="padding: 10px 14px;"><code style="background: #EEF2FF; color: #4F46E5; padding: 3px 8px; border-radius: 6px; font-weight: 700;">{ip}</code></td>
+                    <td style="padding: 10px 14px; font-weight: 700; color: #0F172A;">{action}</td>
+                    <td style="padding: 10px 14px; color: #334155;">{details}</td>
+                    <td style="padding: 10px 14px; font-size: 11px; color: #64748B; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{ua}">{ua}</td>
+                </tr>"""
+
+        return f"""
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 18px;">
+            <div style="padding: 14px 18px; background: #EFF6FF; border-left: 4px solid #3B82F6; border-radius: 8px;">
+                <span style="font-size: 12px; font-weight: 700; color: #1E40AF; text-transform: uppercase;">Total Visitor Request Hits</span>
+                <div style="font-size: 24px; font-weight: 900; color: #1E3A8A; margin-top: 4px;">{len(lines)}</div>
+            </div>
+            <div style="padding: 14px 18px; background: #ECFDF5; border-left: 4px solid #10B981; border-radius: 8px;">
+                <span style="font-size: 12px; font-weight: 700; color: #065F46; text-transform: uppercase;">Unique Visitor IPs</span>
+                <div style="font-size: 24px; font-weight: 900; color: #064E3B; margin-top: 4px;">{len(unique_ips)}</div>
+            </div>
+            <div style="padding: 14px 18px; background: #F5F3FF; border-left: 4px solid #8B5CF6; border-radius: 8px;">
+                <span style="font-size: 12px; font-weight: 700; color: #5B21B6; text-transform: uppercase;">Latest Access Activity</span>
+                <div style="font-size: 14px; font-weight: 700; color: #4C1D95; margin-top: 6px;">{lines[-1].split(' | ')[0].replace('🌐 [VISITOR LOG] ', '') if lines else 'None'}</div>
+            </div>
+        </div>
+        <div style="overflow-x: auto; border: 1px solid #E2E8F0; border-radius: 10px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; font-family: system-ui, -apple-system, sans-serif;">
+                <thead>
+                    <tr style="background: #F8FAFC; color: #475569; border-bottom: 2px solid #E2E8F0;">
+                        <th style="padding: 10px 14px;">Timestamp (Local)</th>
+                        <th style="padding: 10px 14px;">Visitor IP Address</th>
+                        <th style="padding: 10px 14px;">Action Name</th>
+                        <th style="padding: 10px 14px;">Query / Parameters</th>
+                        <th style="padding: 10px 14px;">Device / User-Agent</th>
+                    </tr>
+                </thead>
+                <tbody>{rows_html}</tbody>
+            </table>
+        </div>"""
+    except Exception as e:
+        return f"""<div style="padding: 15px; background: #FEF2F2; color: #991B1B; border-radius: 8px;">Error reading visitor log: {e}</div>"""
+
+
 def create_fallback_image(title="LUXURY PRODUCT"):
     return create_styled_product_image(title, "Merchant Studio Photo")
 
@@ -181,7 +274,8 @@ def generate_radar_chart_cv2(phash_score, dhash_score, sift_score, ssim_score, c
 # CORE COMPUTER VISION ALGORITHMS (INSTANT LIGHTNING SPEED)
 # =========================================================================
 
-def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, draw_count=25, backend_mode="⚡ Native C++17 SIMD Core (O3 / AVX2 Compiled Binary)"):
+def run_multimodal_vision_matching(image1_input, image2_input, sift_ratio=0.75, draw_count=25, backend_mode="⚡ Native C++17 SIMD Core (O3 / AVX2 Compiled Binary)", request: gr.Request = None):
+    log_visitor(request, "Vision Matching Benchmark", f"Threshold: {sift_ratio}, Vectors: {draw_count}, Backend: {backend_mode}")
     import subprocess
     is_cpp_mode = "C++" in str(backend_mode)
 
@@ -532,7 +626,8 @@ def fetch_merchant_images_by_name(query_name):
 
     return img_a, img_b, title, merchants_info
 
-def run_product_name_search_matching(product_name, sift_ratio, draw_count, backend_mode):
+def run_product_name_search_matching(product_name, sift_ratio, draw_count, backend_mode, request: gr.Request = None):
+    log_visitor(request, "Product Search", f"Query: '{product_name}'")
     img_a, img_b, title, merchants_info = fetch_merchant_images_by_name(product_name)
     verdict, sift_img, ssim_img, radar_img, json_metrics, report_md = run_multimodal_vision_matching(
         img_a, img_b, sift_ratio, draw_count, backend_mode
@@ -1090,6 +1185,19 @@ VACUUM {table_name};"""
                 return f"{unload_sql}\n\n{spectrum_ddl}\n\n{vacuum_sql}"
 
             p3_btn.click(demo_redshift_etl, inputs=[p3_tbl, p3_s3, p3_start, p3_end], outputs=[p3_code], api_name=False)
+
+        # -----------------------------------------------------------------
+        # TAB 6: REAL-TIME VISITOR ACCESS AUDIT & IP MONITOR
+        # -----------------------------------------------------------------
+        with gr.Tab("📊 Visitor Access Audit & IP Monitor"):
+            gr.Markdown("### 📊 Real-Time Visitor Access Audit & IP Monitor")
+            gr.Markdown("Monitor live visitors, IP addresses, search queries, and algorithm benchmark execution requests in real-time.")
+            
+            with gr.Row():
+                btn_refresh_logs = gr.Button("🔄 Refresh Live Visitor Log Table", variant="primary")
+            
+            out_visitor_log_html = gr.HTML(value=get_visitor_audit_html)
+            btn_refresh_logs.click(fn=get_visitor_audit_html, inputs=[], outputs=[out_visitor_log_html], api_name=False)
 
 if __name__ == "__main__":
     demo.launch(server_name="0.0.0.0", server_port=7860)

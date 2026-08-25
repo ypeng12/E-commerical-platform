@@ -40,3 +40,7 @@ ENV/
 # Legacy / Subtask folders
 moden/
 modesens-sidetask-crawl_product*/
+
+# Logs
+*.log
+visitor_access.log
