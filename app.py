@@ -38,6 +38,33 @@ SAMPLE_YSL_NETAPORTER_PATH = os.path.join(BASE_DIR, "sample_ysl_netaporter.jpg")
 SAMPLE_YSL_ANGLE_PATH = os.path.join(BASE_DIR, "sample_ysl_angle.jpg")
 
 
+def resolve_lfs_pointer_file(filepath):
+    if not filepath or not isinstance(filepath, str) or not os.path.exists(filepath):
+        return filepath
+    try:
+        if os.path.getsize(filepath) < 1000:
+            with open(filepath, "rb") as f:
+                head = f.read(200)
+            if head.startswith(b"version https://git-lfs") or head.startswith(b"version http"):
+                filename = os.path.basename(filepath)
+                url = f"https://huggingface.co/spaces/Ypeng12/E-commerce-platform/resolve/main/{filename}"
+                print(f"🔗 Resolving Git LFS pointer for {filename} from Hugging Face Hub...")
+                import urllib.request, ssl
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, context=ctx, timeout=12) as response:
+                    content = response.read()
+                    if content and len(content) > 1000:
+                        with open(filepath, "wb") as f_out:
+                            f_out.write(content)
+                        print(f"✅ Successfully downloaded real LFS binary for {filename} ({len(content)} bytes)")
+    except Exception as e:
+        print(f"⚠️ resolve_lfs_pointer_file warning for {filepath}: {e}")
+    return filepath
+
+
 def load_as_bgr(img_input):
     if img_input is None:
         return None
@@ -62,6 +89,7 @@ def load_as_bgr(img_input):
             ]
             for candidate in candidate_paths:
                 if candidate and os.path.exists(candidate):
+                    resolve_lfs_pointer_file(candidate)
                     try:
                         pil_img = Image.open(candidate).convert("RGB")
                         return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
@@ -388,6 +416,7 @@ def load_sample_image_rgb(path, default_title="Fallback Image"):
             ]
             for candidate in candidate_paths:
                 if candidate and os.path.exists(candidate):
+                    resolve_lfs_pointer_file(candidate)
                     try:
                         pil_img = Image.open(candidate).convert("RGB")
                         arr = np.array(pil_img)
@@ -406,6 +435,20 @@ def load_sample_image_rgb(path, default_title="Fallback Image"):
 # =========================================================================
 # PRE-COMPUTED IN-MEMORY PRESET CACHE (INSTANT 0.0001ms CLICK RESPONSE)
 # =========================================================================
+
+SAMPLE_PATHS_TO_RESOLVE = [
+    SAMPLE_IMG1_PATH, SAMPLE_IMG2_PATH,
+    SAMPLE_GUCCI_PATH, SAMPLE_GUCCI_SSENSE_PATH, SAMPLE_GUCCI_ANGLE_PATH,
+    SAMPLE_SNEAKER_PATH, SAMPLE_SNEAKER_END_PATH,
+    SAMPLE_LOEWE_PATH, SAMPLE_LOEWE_MYTHERESA_PATH, SAMPLE_LOEWE_ANGLE_PATH,
+    SAMPLE_PRADA_PATH, SAMPLE_PRADA_FARFETCH_PATH, SAMPLE_PRADA_ANGLE_PATH,
+    SAMPLE_YSL_PATH, SAMPLE_YSL_NETAPORTER_PATH, SAMPLE_YSL_ANGLE_PATH
+]
+for _sp in SAMPLE_PATHS_TO_RESOLVE:
+    try:
+        resolve_lfs_pointer_file(_sp)
+    except Exception:
+        pass
 
 INIT_IMG1 = load_sample_image_rgb(SAMPLE_GUCCI_PATH, "Gucci Dionysus Farfetch")
 INIT_IMG2 = load_sample_image_rgb(SAMPLE_GUCCI_SSENSE_PATH, "Gucci Dionysus SSENSE")
